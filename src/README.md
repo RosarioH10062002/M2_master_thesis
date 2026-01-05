@@ -1,5 +1,5 @@
 
-## 📂 Scripts Overview
+## Scripts Overview
 
 ### `New_code.py`
 **Trial + Baseline**
