@@ -7,7 +7,7 @@ import csv
 FS = 44100  
 fc = 400 # fixed based on the literature 
 fb = 10 # We are gonna change this 
-FB_LIST = [10, 10, 10, 10, 10, 10]  
+FB_LIST = [10, 20, 12, 30, 15, 40]  
 FB_TRIAL = [10]
 IMG_GO = "white_go_task.jpg"      
 IMG_NOGO_FILES = [
@@ -342,12 +342,12 @@ def run_gonogo_block(fb, its_ratio, fc=400,
 
 
     # ITS + Noise 
-    #audio_stim = play_its_block(fc=fc, fb=fb, its_ratio=its_ratio,
-    #                        duration_seconds=block_duration,
-    #                        target_rms=0.02)
+    audio_stim = play_its_block(fc=fc, fb=fb, its_ratio=its_ratio,
+                            duration_seconds=block_duration,
+                            target_rms=0.02)
                             
     # BASELINE 
-    audio_stim = play_baseline_block(fs = FS, duration_seconds = block_duration, target_rms=0.02)
+    #audio_stim = play_baseline_block(fs = FS, duration_seconds = block_duration, target_rms=0.02)
 
 
     # ---- Trial schedule ----
@@ -586,81 +586,17 @@ def save_afc_to_csv(trials, filename):
 def main():
     
     # 2AFC = descomentar**************************************
-    #final_ratio, afc_trials = find_good_its_ratio(
-    #    start_ratio=0.1, 
-    #    step=0.02,
-    #    max_ratio=0.4,
-    #    target_perf=0.7
-    #)
-    #save_afc_to_csv(afc_trials, filename = "AFC_NE-01.csv")
-    #TRIAL 
-    #all_trials_trial_paradigm = run_trial_paradigm(final_ratio = 0.1, fc=400)
-    
-    MAX_ATTEMPTS = 3
-    attempt = 1
-
-    while True:
-        # --- TRIAL BLOCK ---
-        trial_trials = run_trial_paradigm(final_ratio=0.1, fc=400)
-        trial_acc = compute_go_accuracy(trial_trials)
-        print(f"Trial GO accuracy (pan au chocolat): {trial_acc*100:.1f}%")
-
-        # Save each attempt (so you can debug later)
-        save_trials_to_csv(trial_trials, filename=f"trial_behavior_NORMA0301-011_attempt{attempt}.csv")
-
-        # --- PASS? ---
-        if trial_acc >= 0.50:
-            ok_text = visual.TextStim(
-                win,
-                text=(
-                    f"Great! Trial GO accuracy was {trial_acc*100:.1f}%.\n\n"
-                    "Now we will start the main experiment.\n\n"
-                    "Press any key to continue."
-                ),
-                color='white', height=30
-            )
-            ok_text.draw()
-            win.flip()
-            event.waitKeys()
-            break  # ✅ exit the loop and go to full paradigm
-
-        # --- FAIL: RETRY ---
-        if attempt >= MAX_ATTEMPTS:
-            fail_text = visual.TextStim(
-                win,
-                text=(
-                    f"Trial GO accuracy was {trial_acc*100:.1f}%.\n\n"
-                    "You did not reach 50% after several attempts.\n\n"
-                    "Please call the experimenter."
-                ),
-                color='white', height=30
-            )
-            fail_text.draw()
-            win.flip()
-            event.waitKeys()
-            win.close()
-            core.quit()
-            return
-
-        retry_text = visual.TextStim(
-            win,
-            text=(
-                f"Trial GO accuracy was {trial_acc*100:.1f}%.\n\n"
-                "You need at least 50% to continue.\n\n"
-                "Let's try the trial again.\n\n"
-                "Press any key to retry."
-            ),
-            color='white', height=30
-        )
-        retry_text.draw()
-        win.flip()
-        event.waitKeys()
-
-        attempt += 1  # next attempt 
+    final_ratio, afc_trials = find_good_its_ratio(
+        start_ratio=0.1, 
+        step=0.02,
+        max_ratio=0.4,
+        target_perf=0.7
+    )
+    save_afc_to_csv(afc_trials, filename = "AFC_REYNA_03-01.csv") 
 
     # --- FULL PARADIGM ---
     all_trials = run_full_paradigm(final_ratio=0.1, fc=400)
-    save_trials_to_csv(all_trials, filename="behavior_NORMA0301-011.csv")
+    save_trials_to_csv(all_trials, filename="behavior_REYNA_03-01.csv")
 
     win.close()
     core.quit()
