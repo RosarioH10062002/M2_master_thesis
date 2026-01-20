@@ -266,7 +266,7 @@ block_instr = visual.TextStim(
     win,
     text=(
         "INSTRUCTIONS:\n\n"
-        "Press the SPACEBAR only when you see the pan au chocolat.\n"
+        "Press the SPACEBAR only when you see the pain au chocolat.\n"
         "Do NOT press any key for any other figure.\n\n"
         "Keep your eyes on the center of the screen.\n\n"
         "Press SPACE to begin."
