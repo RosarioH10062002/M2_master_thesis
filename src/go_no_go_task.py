@@ -25,8 +25,8 @@ def get_random_stimulus(): # 0 = no_go, 1 = go
 
 def go_no_go(win,fr, stim, fixation, stimulus):
     correct_var = None 
-    frames_req_on = int(stim_on * fr) + 1
-    frames_req_off = int(stim_off * fr) + 1
+    frames_req_on = int(stim_on * fr)
+    frames_req_off = int(stim_off * fr)
     event.clearEvents(eventType='keyboard') # to clear the buffer 
     rt_clock = core.Clock() # my stopwatch 
     resp_key = None

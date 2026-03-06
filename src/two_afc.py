@@ -47,7 +47,7 @@ def run_two_afc(win, fr,  fs, fc, A_announ, B_announ, fb, dc, duration_seconds, 
             win.flip()
         audio.stop()
         win.flip()
-        core.wait(0.25)
+        core.wait(0.5)
     text = "Which interval had the beat?\n\nPress 'A' or 'B'."
     question = visual.TextStim(win, text = text, color = "White")
     question.draw()

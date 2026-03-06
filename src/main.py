@@ -21,24 +21,24 @@ DC = 0.5
 FB_LIST = [10, 20, 12, 30, 15, 40]  
 FB_TRIAL = [10]
 #DURATION OF BLOCKS 
-duration_block = 92 #for audio I prefer to have a margin of 2 seconds 
+duration_block = 90 #for audio I prefer to have a margin of 2 seconds 
 stim_on = 0.250      # image display duration
 resp_window = 1.0   # response acceptance window
 step = 0.05
-ITS_RATIO = 0.1 # initial ITS ratio by default 
+ITS_RATIO = 0.15 # initial ITS ratio by default 
 #IMAGES
 IMG_GO = "white_go_task.jpg"      
 IMG_NOGO= ["white_nogo_task1.jpg","white_nogo_task3.jpg","white_nogo_task4.jpg", "white_nogo_task2.jpg"]
 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "W"  
-PARTICIPANT_ID = "ROSARIO_2"
+EXPERIMENT_MODE = "Y"  
+PARTICIPANT_ID = "ROSARIO_1"
 DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
-# X = trial + baseline
+# X = trial + baseline **
 # Y = baseline
-# Z = 2afc + its, noise
+# Z = 2afc + its, noise **
 # W = its, noise 
 #----------------------------------------
 
@@ -65,10 +65,10 @@ def main_x(): #trial + baseline
     
 def main_y(): #baseline
     baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{DATE}.csv")
+    save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{DATE}.csv")
     
 def main_z(): #2afc + its, noise
-    final_its_ratio = main_twoafc(win, fr,  FS, fc, A_announ, B_announ, fb, dc=DC, duration_seconds=10, its_ratio=ITS_RATIO, n_trials = 5)
+    final_its_ratio = main_twoafc(win, fr,  FS, fc, A_announ, B_announ, fb, dc=DC, duration_seconds=8, its_ratio=ITS_RATIO, n_trials = 5)
     its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=final_its_ratio)
     save_trials_to_csv(its_data, filename = f"ITS_NOISE_{PARTICIPANT_ID}_{DATE}.csv")
 
