@@ -11,6 +11,7 @@ from its_block import play_its_block
 from trial import play_trial_block, main_trial
 from two_afc import main_twoafc
 from save_file import save_trials_to_csv
+from datetime import datetime
 
 #----------------------------------------
 #FREQUENCY PARAMS FOR THE AUDIO GENERATION
@@ -40,7 +41,7 @@ RIGHT_SOUND = "right.wav"
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
 EXPERIMENT_MODE = "X"  
 PARTICIPANT_ID = "ID_1"
-DATE = "03-03"
+#DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
 # Y = baseline
@@ -64,27 +65,28 @@ fixation = visual.TextStim(win, text="+", color="white", height=40)
 A_announ = visual.TextStim(win, text="Interval A", color="white", height=40)
 B_announ = visual.TextStim(win, text = "Interval B", color = "white", height = 40)
 
+TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 def main_x(): #trial + baseline
     trials_data = main_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, right_sound = RIGHT_SOUND, wrong_sound = WRONG_SOUND, right_img = img_check, wrong_img = img_no_check)
-    save_trials_to_csv(trials_data, filename = f"TRIALS_{PARTICIPANT_ID}_{DATE}.csv") 
+    save_trials_to_csv(trials_data, filename = f"TRIALS_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
     #baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    #save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{DATE}.csv") 
-    #print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{DATE}")
+    #save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{DATE}_{TIMESTAMP}.csv") 
+    #print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{DATE}_{TIMESTAMP}")
     
     
 def main_y(): #baseline
     baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{DATE}.csv")
+    save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
     
 def main_z(): #2afc + its, noise
     final_its_ratio = main_twoafc(win, fr,  FS, fc, A_announ, B_announ, fb, dc=DC, duration_seconds=8, its_ratio=ITS_RATIO, n_trials = 5)
     its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=final_its_ratio)
-    save_trials_to_csv(its_data, filename = f"ITS_NOISE_{PARTICIPANT_ID}_{DATE}.csv")
+    save_trials_to_csv(its_data, filename = f"ITS_NOISE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
 
 def main_w(): # its, noise 
     its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    save_trials_to_csv(its_data, filename = f"ONLY_ITS_NOISE_{PARTICIPANT_ID}_{DATE}.csv")
+    save_trials_to_csv(its_data, filename = f"ONLY_ITS_NOISE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
     
 if __name__ == "__main__": 
     if EXPERIMENT_MODE == "X":
