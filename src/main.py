@@ -30,10 +30,16 @@ ITS_RATIO = 0.15 # initial ITS ratio by default
 IMG_GO = "white_go_task.jpg"      
 IMG_NOGO= ["white_nogo_task1.jpg","white_nogo_task3.jpg","white_nogo_task4.jpg", "white_nogo_task2.jpg"]
 
+IMG_Check = "check.png"
+IMG_no_check = "wrong.png"
+
+WRONG_SOUND = "wrong.wav"
+RIGHT_SOUND = "right.wav"
+
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "Y"  
-PARTICIPANT_ID = "ROSARIO_1"
+EXPERIMENT_MODE = "X"  
+PARTICIPANT_ID = "ID_1"
 DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
@@ -50,6 +56,9 @@ no_go_stim_2 = visual.ImageStim(win, image=IMG_NOGO[1], size=(200,200), units="p
 no_go_stim_3 = visual.ImageStim(win, image=IMG_NOGO[2], size=(200,200), units="pix")
 no_go_stim_4 = visual.ImageStim(win, image=IMG_NOGO[3], size=(200,200), units="pix")
 
+img_check = visual.ImageStim(win, image=IMG_Check, pos=(0, 0), size = (200,200))
+img_no_check = visual.ImageStim(win, image = IMG_no_check, pos = (0,0), size = (200,200))
+
 no_go_stim = [no_go_stim_1,no_go_stim_2,no_go_stim_3,no_go_stim_4]
 fixation = visual.TextStim(win, text="+", color="white", height=40)
 A_announ = visual.TextStim(win, text="Interval A", color="white", height=40)
@@ -57,11 +66,12 @@ B_announ = visual.TextStim(win, text = "Interval B", color = "white", height = 4
 
 
 def main_x(): #trial + baseline
-    trials_data = main_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block)
+    trials_data = main_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, right_sound = RIGHT_SOUND, wrong_sound = WRONG_SOUND, right_img = img_check, wrong_img = img_no_check)
     save_trials_to_csv(trials_data, filename = f"TRIALS_{PARTICIPANT_ID}_{DATE}.csv") 
-    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{DATE}.csv")
+    #baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
+    #save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{DATE}.csv") 
     #print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{DATE}")
+    
     
 def main_y(): #baseline
     baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)

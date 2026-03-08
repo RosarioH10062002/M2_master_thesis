@@ -14,8 +14,8 @@ def get_list_fb(fb_list):
     return fb_list
 def play_its_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb_list, dc, duration_seconds, its_ratio):
     announcement(win, text = "INSTRUCTIONS:\n\n"
-        "Press the SPACEBAR only when you see the pan au chocolat.\n"
-        "Do NOT press any key for any other figure.\n\n"
+        "Do NOT press any key when you see the pain au chocolat.\n\n"
+        "Press the SPACEBAR only for any other figure.\n"
         "Keep your eyes on the center of the screen.\n\n"
         "Press SPACE to begin.")
     fb_list_random = get_list_fb(fb_list)

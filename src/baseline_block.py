@@ -12,8 +12,8 @@ n_blocks = 6; # I would like to have 6 blocks of 90 seconds
 
 def play_baseline_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, duration_seconds, its_ratio):
     announcement(win, text = "INSTRUCTIONS:\n\n"
-        "Press the SPACEBAR only when you see the pan au chocolat.\n"
-        "Do NOT press any key for any other figure.\n\n"
+        "Do NOT press any key when you see the pain au chocolat.\n\n"
+        "Press the SPACEBAR only for any other figure.\n"
         "Keep your eyes on the center of the screen.\n\n"
         "Press SPACE to begin.")
     for block_index in range(n_blocks): 
