@@ -208,6 +208,8 @@ def block_stimulus_trial(win,fr, go_stim,no_go_stim,fixation,FS, block_index, ri
             "stimulus_code": 0,
             "resp_key": resp_key,
             "rt(s)": rt,
+            "fc(hz)": None,
+            "fb(hz)": None,
             "correct": correct_var
             })
         elif stimulus == 1: 
@@ -226,6 +228,8 @@ def block_stimulus_trial(win,fr, go_stim,no_go_stim,fixation,FS, block_index, ri
             "stimulus_code": 1,
             "resp_key": resp_key,
             "rt(s)": rt,
+            "fc(hz)": None,
+            "fb(hz)": None,
             "correct": correct_var
             })
         

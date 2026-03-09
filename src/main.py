@@ -39,8 +39,8 @@ RIGHT_SOUND = "right.wav"
 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "X"  
-PARTICIPANT_ID = "ID_1"
+EXPERIMENT_MODE = "X" 
+PARTICIPANT_ID = "ID2"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
@@ -70,9 +70,9 @@ TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 def main_x(): #trial + baseline
     trials_data = main_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, right_sound = RIGHT_SOUND, wrong_sound = WRONG_SOUND, right_img = img_check, wrong_img = img_no_check)
     save_trials_to_csv(trials_data, filename = f"TRIALS_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
-    #baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    #save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{DATE}_{TIMESTAMP}.csv") 
-    #print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{DATE}_{TIMESTAMP}")
+    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
+    save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
+    print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}")
     
     
 def main_y(): #baseline
