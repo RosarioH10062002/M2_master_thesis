@@ -10,7 +10,7 @@ from go_no_go_task import go_no_go, block_stimulus
 
 n_blocks = 6; # I would like to have 6 blocks of 90 seconds 
 
-def play_baseline_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, duration_seconds, its_ratio):
+def play_baseline_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, duration_seconds, its_ratio, marker_outlet):
     announcement(win, text = "INSTRUCTIONS:\n\n"
         "Do NOT press any key when you see the pain au chocolat.\n\n"
         "Press the SPACEBAR only for any other figure.\n"
@@ -18,7 +18,7 @@ def play_baseline_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, dura
         "Press SPACE to begin.")
     for block_index in range(n_blocks): 
         audio_array = generate_pink_noise(duration = duration_seconds, fs = fs)
-        trials_data, correct_counter = block_stimulus(win,fr,go_stim, no_go_stim,fixation,audio_array,fs, block_index+1,fc = None,fb = None)
+        trials_data, correct_counter = block_stimulus(win,fr,go_stim, no_go_stim,fixation,audio_array,fs, block_index+1,fc = None,fb = None, marker_outlet = marker_outlet)
         if block_index != (n_blocks-1):
             event.clearEvents(eventType='keyboard')
             announcement(win, text=f"Block {block_index+1}/{n_blocks} complete.\n\nTake a short rest.\n\nPress space to continue.")

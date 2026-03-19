@@ -12,6 +12,7 @@ from trial import play_trial_block, main_trial
 from two_afc import main_twoafc
 from save_file import save_trials_to_csv
 from datetime import datetime
+from pylsl import StreamInfo, StreamOutlet
 
 #----------------------------------------
 #FREQUENCY PARAMS FOR THE AUDIO GENERATION
@@ -38,9 +39,20 @@ WRONG_SOUND = "wrong.wav"
 RIGHT_SOUND = "right.wav"
 
 #----------------------------------------
+#TO SEND THE MARKERS 
+marker_info = StreamInfo(
+    name='Markers',
+    type='Markers',
+    channel_count=1,
+    nominal_srate=0,
+    channel_format='int32'
+)
+
+marker_outlet = StreamOutlet(marker_info)
+#----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "X" 
-PARTICIPANT_ID = "ID2"
+EXPERIMENT_MODE = "Y" 
+PARTICIPANT_ID = "Prueba"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
@@ -76,7 +88,7 @@ def main_x(): #trial + baseline
     
     
 def main_y(): #baseline
-    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
+    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
     save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
     
 def main_z(): #2afc + its, noise

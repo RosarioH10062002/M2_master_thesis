@@ -36,7 +36,7 @@ def get_random_stimulus(trials): # 0 = no_go, 1 = go
     np.random.shuffle(trial_types)
     return trial_types
 
-def go_no_go(win,fr, stim, fixation, stimulus):
+def go_no_go(win,fr, stim, fixation, stimulus, marker_outlet):
     correct_var = None 
     frames_req_on = int(stim_on * fr)
     frames_req_off = int(stim_off * fr)
@@ -53,10 +53,16 @@ def go_no_go(win,fr, stim, fixation, stimulus):
             win.callOnFlip(lambda: trial_onset.__setitem__(0, core.getTime())) #SUPER IMPORTANT! Because allow me to extract the time exaclty when the stimulus appear. it takes the gloabl clock time (starts right before the time)
 
         win.flip()
+        if stimulus == 1: #GO
+            marker_outlet.push_sample([1])
+        elif stimulus == 0: # NO GO
+            marker_outlet.push_sample([2])
+            
         if resp_key is None:
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys: 
                 resp_key, rt = keys[0]
+                marker_outlet.push_sample([3])
 
     for frame in range(frames_req_off): 
         fixation.draw()
@@ -73,7 +79,7 @@ def go_no_go(win,fr, stim, fixation, stimulus):
         correct_var = "Incorrect"
     return resp_key, rt, correct_var, trial_onset[0]
     
-def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_index, fc, fb): 
+def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_index, fc, fb, marker_outlet): 
     correct_counter = 0 
     list_stimulus = get_random_stimulus(trials)
     audio = sound.Sound(value = audio_array,sampleRate=FS)
@@ -82,7 +88,7 @@ def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_ind
         if stimulus == 0: 
             n = get_no_go(len(no_go_stim))
             stim = no_go_stim[n]
-            resp_key, rt, correct_var, trial_onset = go_no_go(win,fr, stim, fixation, stimulus)
+            resp_key, rt, correct_var, trial_onset = go_no_go(win,fr, stim, fixation, stimulus, marker_outlet)
             trials_data.append({
             "block_index": block_index,
             "trial": index,
@@ -97,7 +103,7 @@ def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_ind
             })
         elif stimulus == 1: 
             stim = go_stim
-            resp_key, rt, correct_var, trial_onset = go_no_go(win,fr, stim, fixation, stimulus)
+            resp_key, rt, correct_var, trial_onset = go_no_go(win,fr, stim, fixation, stimulus, marker_outlet)
             trials_data.append({
             "block_index": block_index,
             "trial": index,
@@ -147,6 +153,7 @@ def go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, f
             win.callOnFlip(lambda: trial_onset.__setitem__(0, core.getTime())) #SUPER IMPORTANT! Because allow me to extract the time exaclty when the stimulus appear. it takes the gloabl clock time (starts right before the time)
 
         win.flip()
+           
         if resp_key is None:
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys: 
