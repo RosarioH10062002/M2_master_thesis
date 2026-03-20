@@ -13,6 +13,7 @@ from two_afc import main_twoafc
 from save_file import save_trials_to_csv
 from datetime import datetime
 from pylsl import StreamInfo, StreamOutlet
+from mini_version import play_baseline_block_mini_trial
 
 #----------------------------------------
 #FREQUENCY PARAMS FOR THE AUDIO GENERATION
@@ -41,7 +42,7 @@ RIGHT_SOUND = "right.wav"
 #----------------------------------------
 #TO SEND THE MARKERS 
 marker_info = StreamInfo(
-    name='Markers',
+    name='Psychopy_markers',
     type='Markers',
     channel_count=1,
     nominal_srate=0,
@@ -49,19 +50,22 @@ marker_info = StreamInfo(
 )
 
 marker_outlet = StreamOutlet(marker_info)
+print("Marker is mounted")
+#marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "Y" 
-PARTICIPANT_ID = "Prueba"
+EXPERIMENT_MODE = "M" 
+PARTICIPANT_ID = "Trial"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
 # Y = baseline
 # Z = 2afc + its, noise **
 # W = its, noise 
+# M = Mini trial 
 #----------------------------------------
-
-win = visual.Window([1366, 768], color='black', units='pix', fullscr = True)
+win = visual.Window([1536, 864], color='black', units='pix')
+#win = visual.Window([1536, 864], color='black', units='pix', fullscr = True)
 fr = win.getActualFrameRate()  # 60 hz so each frame is 20 ms 
 go_stim = visual.ImageStim(win, image=IMG_GO, size=(200,200), units="pix")
 no_go_stim_1 = visual.ImageStim(win, image=IMG_NOGO[0], size=(200,200), units="pix")
@@ -99,6 +103,11 @@ def main_z(): #2afc + its, noise
 def main_w(): # its, noise 
     its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
     save_trials_to_csv(its_data, filename = f"ONLY_ITS_NOISE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
+
+def main_m():
+    #marker_outlet = StreamOutlet(marker_info)
+    baseline_data = play_baseline_block_mini_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
+    save_trials_to_csv(baseline_data, filename = f"MINI_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
     
 if __name__ == "__main__": 
     if EXPERIMENT_MODE == "X":
@@ -113,6 +122,9 @@ if __name__ == "__main__":
         
     elif EXPERIMENT_MODE == "W": 
         main_w()
+        
+    elif EXPERIMENT_MODE == "M":
+        main_m()
     else:
         raise ValueError("Unknown experimental scenario")
 

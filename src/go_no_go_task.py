@@ -62,7 +62,7 @@ def go_no_go(win,fr, stim, fixation, stimulus, marker_outlet):
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys: 
                 resp_key, rt = keys[0]
-                marker_outlet.push_sample([3])
+                marker_outlet.push_sample([3]) #PRESS A KEY 
 
     for frame in range(frames_req_off): 
         fixation.draw()
@@ -71,6 +71,8 @@ def go_no_go(win,fr, stim, fixation, stimulus, marker_outlet):
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys: 
                 resp_key, rt = keys[0]
+                marker_outlet.push_sample([3]) #PRESS A KEY 
+                
     if stimulus == 0 and resp_key == "space": 
         correct_var = "Correct"
     elif stimulus == 1 and resp_key is None: 
