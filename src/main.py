@@ -25,7 +25,7 @@ DC = 0.5
 FB_LIST = [10, 20, 12, 30, 15, 40]  
 FB_TRIAL = [10]
 #DURATION OF BLOCKS 
-duration_block = 90 #for audio I prefer to have a margin of 2 seconds 
+duration_block = 91 #for audio I prefer to have a margin of 2 seconds 
 stim_on = 0.250      # image display duration
 resp_window = 1.0   # response acceptance window
 step = 0.05
