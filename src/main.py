@@ -14,6 +14,7 @@ from save_file import save_trials_to_csv
 from datetime import datetime
 from pylsl import StreamInfo, StreamOutlet
 from mini_version import play_baseline_block_mini_trial
+from pre_phase_eeg import run_pre_phase
 
 #----------------------------------------
 #FREQUENCY PARAMS FOR THE AUDIO GENERATION
@@ -50,12 +51,12 @@ marker_info = StreamInfo(
 )
 
 marker_outlet = StreamOutlet(marker_info)
-print("Marker is mounted")
+#print("Marker is mounted")
 #marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
 EXPERIMENT_MODE = "M" 
-PARTICIPANT_ID = "Trial"
+PARTICIPANT_ID = "Mini_trial"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
@@ -63,6 +64,7 @@ PARTICIPANT_ID = "Trial"
 # Z = 2afc + its, noise **
 # W = its, noise 
 # M = Mini trial 
+# PP = Pre/Post phase + Mini trial
 #----------------------------------------
 win = visual.Window([1536, 864], color='black', units='pix')
 #win = visual.Window([1536, 864], color='black', units='pix', fullscr = True)
@@ -108,7 +110,12 @@ def main_m():
     #marker_outlet = StreamOutlet(marker_info)
     baseline_data = play_baseline_block_mini_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
     save_trials_to_csv(baseline_data, filename = f"MINI_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
-    
+
+def main_pp(): 
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
+    baseline_data = play_baseline_block_mini_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
+    save_trials_to_csv(baseline_data, filename = f"MINI_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
 if __name__ == "__main__": 
     if EXPERIMENT_MODE == "X":
         
@@ -125,6 +132,10 @@ if __name__ == "__main__":
         
     elif EXPERIMENT_MODE == "M":
         main_m()
+        
+    elif EXPERIMENT_MODE == "PP":
+        main_pp()
+        
     else:
         raise ValueError("Unknown experimental scenario")
 
