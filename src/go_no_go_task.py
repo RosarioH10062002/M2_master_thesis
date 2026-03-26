@@ -51,12 +51,13 @@ def go_no_go(win,fr, stim, fixation, stimulus, marker_outlet):
             win.callOnFlip(event.clearEvents, eventType='keyboard') # scheduled right when it flips the window
             win.callOnFlip(rt_clock.reset)
             win.callOnFlip(lambda: trial_onset.__setitem__(0, core.getTime())) #SUPER IMPORTANT! Because allow me to extract the time exaclty when the stimulus appear. it takes the gloabl clock time (starts right before the time)
-
+            #win.callOnFlip(marker_outlet.push_sample, [0])  # trial start
+            if stimulus == 1: #NO GO
+                win.callOnFlip(marker_outlet.push_sample, [1])
+            elif stimulus == 0: # GO
+                win.callOnFlip(marker_outlet.push_sample, [2])           
+        
         win.flip()
-        if stimulus == 1: #GO
-            marker_outlet.push_sample([1])
-        elif stimulus == 0: # NO GO
-            marker_outlet.push_sample([2])
             
         if resp_key is None:
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
@@ -71,8 +72,11 @@ def go_no_go(win,fr, stim, fixation, stimulus, marker_outlet):
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys: 
                 resp_key, rt = keys[0]
-                marker_outlet.push_sample([3]) #PRESS A KEY 
-                
+                marker_outlet.push_sample([3]) #PRESS A KEY    
+    fixation.draw()
+    #win.callOnFlip(marker_outlet.push_sample, [4])
+    win.flip()
+    
     if stimulus == 0 and resp_key == "space": 
         correct_var = "Correct"
     elif stimulus == 1 and resp_key is None: 
@@ -95,7 +99,7 @@ def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_ind
             "block_index": block_index,
             "trial": index,
             "trial_onset(s)": trial_onset,
-            "stimulus_type": "No_go",
+            "stimulus_type": "Go",
             "stimulus_code": 0,
             "resp_key": resp_key,
             "rt(s)": rt,
@@ -110,7 +114,7 @@ def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_ind
             "block_index": block_index,
             "trial": index,
             "trial_onset(s)": trial_onset,
-            "stimulus_type": "Go",
+            "stimulus_type": "No_Go",
             "stimulus_code": 1,
             "resp_key": resp_key,
             "rt(s)": rt,
