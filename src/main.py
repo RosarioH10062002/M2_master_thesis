@@ -55,8 +55,8 @@ marker_outlet = StreamOutlet(marker_info)
 #marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "M" 
-PARTICIPANT_ID = "Mini_trial"
+EXPERIMENT_MODE = "PP" 
+PARTICIPANT_ID = "trial"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
