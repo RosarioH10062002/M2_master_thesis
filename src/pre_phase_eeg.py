@@ -10,7 +10,7 @@ from announcement import announcement
 #B: BLINK/EYE MOVEMENT 
 #N: EXTERNAL NOISE / INTERRUPTION
 #M: MOVEMENT (HEAD MOVEMENT, POSTURE CHANGE, MUSCLE TENSION)
-duration = 60 # seconds (300 seconds = 5 minutes)  
+duration = 300 # seconds (300 seconds = 5 minutes)  
 def run_pre_phase(win, fixation, marker_outlet, fr, mode): 
     
     frames_req = int(duration * fr)
