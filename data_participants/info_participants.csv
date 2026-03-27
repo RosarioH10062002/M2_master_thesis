@@ -1,0 +1,15 @@
+,ID PARTICIPANT,GENDER,ASRS,IMPORTANT OBSERVATIONS,STATE
+0,ID1 ,M,4/6,,Sucessful 
+1,ID2,M,5/6,,Sucessful 
+2,ID3,F,5/6,,Sucessful 
+3,ID4,M,1/6,,Sucessful 
+4,ID5,M,5/6,He took medication for ADHD during his childhood,Sucessful 
+5,ID6,F,4/6,She usually hear white noise for studying ,Sucessful 
+6,ID7,M,1/6,,Sucessful 
+7,ID8,F,4/6,She usually hear white noise for studying ,Sucessful 
+8,ID9,F,2/6,She usually hear rain noise for studying ,Sucessful 
+9,ID10,M,1/6,He used to work with ASMR,Not sucessful (He performed without headphones)
+10,ID11,M,2/6,"Very interesting phenomenum, he is very attentive but the frustration makes him to perform bad ",Sucessful 
+11,ID12,M,3/6,"My mistake, He asked me about the time and I told him the second and he improved his performance b ecause he waits for 30 seconds",Not sucessful (The headphones were a nightmare)
+12,ID13,M,4/6,"Apparently, there was music behind (probably the spotify), very collaborative ",Not sucessful (Idk if there was music or not)
+13,ID14,F,3/6,She hear clasic music to study,Sucessful 
