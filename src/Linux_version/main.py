@@ -9,6 +9,7 @@
 #[1000] Start sound
 #[1001] Finish sound
 #[1002] FInish experiment sound
+#[1003] Ding sound 
 #ARTIFACT TRIGGERS --------------------------------------
 # Keys = V B N M  
 #V: SPEECH / VOCALIZATION [100]
@@ -75,7 +76,7 @@ marker_outlet = StreamOutlet(marker_info)
 #marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "PP" 
+EXPERIMENT_MODE = "COMPLETE" 
 PARTICIPANT_ID = "trial"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
@@ -132,10 +133,10 @@ def main_m():
     save_trials_to_csv(baseline_data, filename = f"MINI_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
 
 def main_pp(): 
-    #run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
     baseline_data = play_baseline_block_mini_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
     save_trials_to_csv(baseline_data, filename = f"MINI_TRIAL_ALL_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
-    #run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
     
 def main_complete(): 
     run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
