@@ -35,7 +35,7 @@ def play_baseline_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, dura
                     )
                     break_announ.draw()
                     win.flip()
-            announcement(win, text=f"Press space to continue.")
+            announcement(win, text=f"Press space to continue.", marker_outlet = marker_outlet)
         else:
             event.clearEvents(eventType='keyboard')
             announcement(win, text=f"Block {block_index+1}/{n_blocks} complete.\nPress space to continue.")

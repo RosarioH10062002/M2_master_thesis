@@ -1,4 +1,5 @@
 #import sys
+#import sys
 #print("PYTHON USED:", sys.executable)
 #LIST OF MARKERS:
 # MAIN TASK ------------------------------------------------
@@ -76,8 +77,8 @@ marker_outlet = StreamOutlet(marker_info)
 #marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "COMPLETE" 
-PARTICIPANT_ID = "trial"
+EXPERIMENT_MODE = "Z" 
+PARTICIPANT_ID = "COMPLETE"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
 # X = trial + baseline **
@@ -87,9 +88,10 @@ PARTICIPANT_ID = "trial"
 # M = Mini trial 
 # PP = Pre/Post phase + Mini trial
 #----------------------------------------
-win = visual.Window([1536, 864], color='black', units='pix')
-#win = visual.Window([1536, 864], color='black', units='pix', fullscr = True)
-fr = win.getActualFrameRate()  # 60 hz so each frame is 20 ms 
+win = visual.Window([1920, 1000], color='black', units='pix')
+#win = visual.Window(fullscr = True, color='black', units='pix')
+#fr = win.getActualFrameRate()  # 60 hz so each frame is 20 ms 
+fr = 60
 go_stim = visual.ImageStim(win, image=IMG_GO, size=(200,200), units="pix")
 no_go_stim_1 = visual.ImageStim(win, image=IMG_NOGO[0], size=(200,200), units="pix")
 no_go_stim_2 = visual.ImageStim(win, image=IMG_NOGO[1], size=(200,200), units="pix")
@@ -119,9 +121,18 @@ def main_y(): #baseline
     save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
     
 def main_z(): #2afc + its, noise
-    final_its_ratio = main_twoafc(win, fr,  FS, fc, A_announ, B_announ, fb, dc=DC, duration_seconds=8, its_ratio=ITS_RATIO, n_trials = 5)
-    its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=final_its_ratio)
-    save_trials_to_csv(its_data, filename = f"ITS_NOISE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
+    final_its_ratio = main_twoafc(win, fr,  FS, fc, A_announ, B_announ, fb, dc=DC, duration_seconds=8, its_ratio=ITS_RATIO, n_trials = 5, marker_outlet = marker_outlet)
+    preparing = visual.TextStim(
+        win,
+        text="Preparing the next phase...\n\nPlease wait.",
+        color="white"
+    )
+    preparing.draw()
+    win.flip()
+    core.wait(8.0) 
+    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
+    #its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=final_its_ratio)
+    save_trials_to_csv(baseline_data, filename = f"ITS_NOISE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
 
 def main_w(): # its, noise 
     its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
@@ -139,12 +150,13 @@ def main_pp():
     run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
     
 def main_complete(): 
-    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
+    #run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
     baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
     save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
-    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
+    #run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
     
 if __name__ == "__main__": 
+    
     if EXPERIMENT_MODE == "X":
         
         main_x()
