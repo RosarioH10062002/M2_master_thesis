@@ -108,6 +108,8 @@ def visualize_signal(df, row, clean = False):
             df["ICA PATH"] = ""
         if "ICA EXCLUDE" not in df.columns:
             df["ICA EXCLUDE"] = ""
+        else: 
+            df["ICA EXCLUDE"] = df["ICA EXCLUDE"].astype(str)
 
         df.loc[row, "ICA PATH"] = ica_path
         df.loc[row, "ICA EXCLUDE"] = ",".join(map(str, ica.exclude))
