@@ -78,7 +78,7 @@ def clean_setup_signal(df,row):
     date = df["DATE"][row]
     id = df["ID"][row]
     phase = df["LABEL"][row]
-    annotations = get_markers_annotations(id = id, date = date)
+    annotations = get_markers_annotations(id = id, date = date, phase = phase)
     raw = mne.io.read_raw_fif(mne_path, preload=True)
     raw.set_annotations(annotations)
 
@@ -89,7 +89,13 @@ def clean_setup_signal(df,row):
 
     raw.filter(l_freq = 0.5,h_freq = 40) 
     raw.notch_filter(50)
-    raw.set_eeg_reference("average")
+    if len(raw.info["bads"]) < len(raw.ch_names):
+        raw.set_eeg_reference("average")
+    else:
+        print("All channels marked as bad.")
+        return None
+
+    #raw.set_eeg_reference("average")
     #print(raw.info["bads"])
     #picks_channels = ["O1", "O2"]
     return raw
@@ -100,6 +106,9 @@ def visualize_signal(df, row, clean = False):
     id = df["ID"][row]
     phase = df["LABEL"][row]
     raw = clean_setup_signal(df,row)
+    if raw is None: 
+        print("Bad session detected. Skipping.")
+        return 
     if clean == False: 
         raw.plot(block = False, scalings = "auto",title=f"ID{id} - {date} - {phase}")
         raw.compute_psd().plot()
@@ -139,9 +148,11 @@ def save_mne(date, phase, id, data_mne_clean):
     return str(save_path)
 
 
-def get_markers_annotations(id, date):
-    for f in Path(mne_files_path).rglob(f"*markers.csv"): 
-        if (f"ID{id}_" in f.name and f"_{date}_" in f.name):
+def get_markers_annotations(id, date,phase):
+    expected_name = f"ID{id}_{date}_{phase}_markers.csv"
+    for f in Path(mne_files_path).rglob(f"*markers.csv"):
+        if f.name == expected_name: 
+        #if (f"ID{id}_" in f.name and f"_{date}_" in f.name and f"_{phase}_" in f.name):
             markers = pd.read_csv(f)
             print(f)
             print("------------------")
@@ -186,8 +197,14 @@ for f in mne_files_path.rglob("*.fif"):
 print(f"Found {len(fif_dict)} FIF files")
 
 info_df = load_dataset()
-print(info_df.iloc[54,:].iloc[0])
-print(info_df.iloc[54,:].iloc[1])
-print(info_df.iloc[54,:].iloc[2])
+#print(info_df.iloc[54,:].iloc[0])
+#print(info_df.iloc[54,:].iloc[1])
+#print(info_df.iloc[54,:].iloc[2])
 
-visualize_signal(df = info_df, row = 54, clean = False)
+row = 54
+print(info_df.loc[row, ["ID","DATE","LABEL"]])
+#visualize_signal(df=info_df,row=row,clean=False)
+#print(len(info_df))
+#print(info_df.index)
+#print(info_df.shape)
+
