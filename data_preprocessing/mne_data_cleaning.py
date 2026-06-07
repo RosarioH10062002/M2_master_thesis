@@ -13,6 +13,15 @@ def load_dataset():
 
     info_df = pd.read_csv(info_datasets)
 
+    if "BAD CHANNELS" in info_df.columns:
+        info_df["BAD CHANNELS"] = info_df["BAD CHANNELS"].astype(str)
+
+    if "ICA PATH" in info_df.columns:
+        info_df["ICA PATH"] = info_df["ICA PATH"].astype(str)
+
+    if "ICA EXCLUDE" in info_df.columns:
+        info_df["ICA EXCLUDE"] = info_df["ICA EXCLUDE"].astype(str)
+
     info_df["PSYCHOPY"] = (info_df["PSYCHOPY"].str.replace("/content/drive/My Drive/", r"G:/Mon Drive/", regex=False))
 
     info_df["TRIMMED RAW EEG"] = (info_df["TRIMMED RAW EEG"].str.replace( "/content/drive/My Drive/",r"G:/Mon Drive/",regex=False))
@@ -92,15 +101,17 @@ def visualize_signal(df, row, clean = False):
     phase = df["LABEL"][row]
     raw = clean_setup_signal(df,row)
     if clean == False: 
+        raw.plot(block = False, scalings = "auto",title=f"ID{id} - {date} - {phase}")
+        raw.compute_psd().plot()
+        raw.plot_sensors(show_names=True)
+
         if "BAD CHANNELS" not in df.columns:
             df["BAD CHANNELS"] = ""
         raw = get_bad_channels(raw)  
         df.loc[row, "BAD CHANNELS"] = ",".join(raw.info["bads"])
         df.to_csv(info_datasets, index = False)
 
-        raw.plot(block = False, scalings = "auto",title=f"ID{id} - {date} - {phase}")
-        raw.compute_psd().plot()
-        raw.plot_sensors(show_names=True)
+
     else: 
         raw_clean, ica = remove_blink(raw)
         ica_path = save_mne(date, phase, id, data_mne_clean = raw_clean)
@@ -179,4 +190,4 @@ print(info_df.iloc[54,:].iloc[0])
 print(info_df.iloc[54,:].iloc[1])
 print(info_df.iloc[54,:].iloc[2])
 
-visualize_signal(df = info_df, row = 54, clean = True)
+visualize_signal(df = info_df, row = 54, clean = False)
