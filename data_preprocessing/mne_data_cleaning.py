@@ -40,19 +40,22 @@ def get_bad_channels(raw):
     return raw
 def remove_blink(raw): 
     events, event_id = mne.events_from_annotations(raw)
+    blink_epochs = None
+    if "101" in event_id:
+        blink_epochs = mne.Epochs(
+            raw,
+            events,
+            event_id={"blink": event_id["101"]},
+            tmin=-0.5,
+            tmax=0.8,
+            baseline=(-0.5, 0),
+            preload=True
+        )
 
-    blink_epochs = mne.Epochs(
-        raw,
-        events,
-        event_id={"blink": event_id["101"]},
-        tmin=-0.5,
-        tmax=0.8,
-        baseline=(-0.5, 0),
-        preload=True
-    )
-
-    blink_epochs.average().plot()
-    plt.show()
+        blink_epochs.average().plot()
+        plt.show()
+    else:
+        print("No blink marker 101 found.")
 
     ica = mne.preprocessing.ICA(
     n_components=0.99,
@@ -63,9 +66,10 @@ def remove_blink(raw):
     plt.show()
     ica.plot_sources(raw)
     plt.show()
-    ica_sources = ica.get_sources(blink_epochs)
-    ica_sources.average(picks="all").plot()
-    plt.show()
+    if blink_epochs is not None: 
+        ica_sources = ica.get_sources(blink_epochs)
+        ica_sources.average(picks="all").plot()
+        plt.show()
     component = int(input("ICA component to remove: "))
     ica.exclude = [component]
     
@@ -189,6 +193,8 @@ def get_fif_path(row):
 
     return fif_dict.get(expected_name, None)
 
+
+
 fif_dict = {}
 
 for f in mne_files_path.rglob("*.fif"):
@@ -201,9 +207,9 @@ info_df = load_dataset()
 #print(info_df.iloc[54,:].iloc[1])
 #print(info_df.iloc[54,:].iloc[2])
 
-row = 54
+row = 3
 print(info_df.loc[row, ["ID","DATE","LABEL"]])
-#visualize_signal(df=info_df,row=row,clean=False)
+visualize_signal(df=info_df,row=row,clean=True)
 #print(len(info_df))
 #print(info_df.index)
 #print(info_df.shape)
