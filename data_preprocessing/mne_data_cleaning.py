@@ -407,8 +407,10 @@ for f in mne_files_path.rglob("*.fif"):
 print(f"Found {len(fif_dict)} FIF files")
 
 
-def compare_wavelets(raw_pre, raw_post,channels,label):
-
+def compare_wavelets(raw_pre, raw_post,channels,label,row,df):
+    date = df["DATE"][row]
+    id = df["ID"][row]
+    phase = df["LABEL"][row]
 
     freqs = np.arange(1, 40, 1)
     n_cycles = freqs / 2
@@ -516,7 +518,7 @@ def compare_wavelets(raw_pre, raw_post,channels,label):
     )
 
     cbar.set_label("Power (dB)")
-
+    fig.canvas.manager.set_window_title(f"Wavelet | ID{id} | {date} | {phase} | {label} PHASE")
     plt.tight_layout(rect=[0, 0, 0.85, 1])
     plt.show(block = False)
 
@@ -526,13 +528,15 @@ def get_frontal_channels():
 def get_occipital_channels(): 
     return ["P7", "P8", "O1", "O2"]
 
-def show_wavelet_two_zones(raw_pre,raw_post): 
+def show_wavelet_two_zones(raw_pre,raw_post,row,df): 
     channels = get_frontal_channels()
-    compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Frontal")
+    compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Frontal",row = row, df = df)
     channels = get_occipital_channels()
-    compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Occipital")
+    compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Occipital",row = row, df = df)
     input("Press enter to continue...")
 
+def look_specific_wavelet(): 
+    return None 
 #MAIN-----------------------------------------------------------------------------------
 info_df = load_dataset()
 #preprocessed_subject(info_df=info_df, row=3)
@@ -552,7 +556,7 @@ for row, session in info_df.iterrows():
         #print(info_df.iloc[54,:].iloc[0])
         #print(info_df.iloc[54,:].iloc[1])
         #print(info_df.iloc[54,:].iloc[2])
-        show_wavelet_two_zones(raw_pre=raw_pre,raw_post = raw_post)
+        show_wavelet_two_zones(raw_pre=raw_pre,raw_post = raw_post, row = row, df = info_df)
         #print(len(info_df))
         #print(info_df.index)
         #print(info_df.shape)
