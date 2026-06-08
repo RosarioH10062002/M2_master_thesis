@@ -193,7 +193,18 @@ def get_fif_path(row):
 
     return fif_dict.get(expected_name, None)
 
+def get_partipants(): 
+    return [2,5,6,8,10,13]
 
+def get_summary(): 
+    list_part = get_partipants()
+    dataset = pd.read_csv(info_datasets)
+    for id in list_part:
+        df = dataset[(dataset["ID"] == id) & (dataset["COMPANY"] == f"BitBrain_EEG") ]
+        print(f"ID{id}")
+        print(Counter(df["LABEL"]))
+
+get_summary()
 
 fif_dict = {}
 
@@ -210,6 +221,7 @@ info_df = load_dataset()
 row = 3
 print(info_df.loc[row, ["ID","DATE","LABEL"]])
 visualize_signal(df=info_df,row=row,clean=True)
+
 #print(len(info_df))
 #print(info_df.index)
 #print(info_df.shape)
