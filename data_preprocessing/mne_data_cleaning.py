@@ -267,87 +267,44 @@ def create_epochs(row):
 from mne.time_frequency import tfr_array_morlet
 
 def plot_individual_wavelets(raw): 
-    return False
-
-def plot_wavelets(raw_pre, raw_task, raw_post):
-
-    raws = [raw_pre, raw_task, raw_post]
-    labels = ["PRE", "TASK", "POST"]
-
     freqs = np.arange(1, 40, 1)
     n_cycles = freqs / 2
 
-    n_channels = len(raw_pre.ch_names)
+    data = raw.get_data()
 
-    fig, axes = plt.subplots(
-        nrows=n_channels,
-        ncols=3,
-        figsize=(15, 2*n_channels),
-        squeeze=False
+    power = tfr_array_morlet(
+        data[np.newaxis, :, :],
+        sfreq=raw.info["sfreq"],
+        freqs=freqs,
+        n_cycles=n_cycles,
+        output="power"
+    )[0]
+
+    print(power.shape)
+    ch = "O2"
+
+    ch_idx = raw.ch_names.index(ch)
+
+    power_db = 10 * np.log10(
+        power[ch_idx] + 1e-12
+    )
+    plt.figure(figsize=(12,6))
+
+    plt.imshow(
+        power_db,
+        aspect="auto",
+        origin="lower",
+        extent=[raw.times[0],raw.times[-1],freqs[0],freqs[-1]],
+        cmap="viridis"
     )
 
-    global_min = np.inf
-    global_max = -np.inf
-
-    power_all = []
-
-    #to find the global scale 
-    for raw in raws:
-
-        data = raw.get_data()
-
-        power = tfr_array_morlet(
-            data[np.newaxis, :, :],
-            sfreq=raw.info["sfreq"],
-            freqs=freqs,
-            n_cycles=n_cycles,
-            output="power")[0]
-
-        power_all.append(power)
-
-        global_min = min(global_min, power.min())
-        global_max = max(global_max, power.max())
-
-
-    for col, (raw, power, label) in enumerate(zip(raws, power_all, labels)):
-
-        times = raw.times
-
-        for row, ch_name in enumerate(raw.ch_names):
-
-            ax = axes[row, col]
-
-            im = ax.imshow(
-                power[row],
-                aspect="auto",
-                origin="lower",
-                extent=[
-                    times[0],
-                    times[-1],
-                    freqs[0],
-                    freqs[-1]
-                ],
-                vmin=global_min,
-                vmax=global_max
-            )
-
-            if row == 0: ax.set_title(label)
-
-            if col == 0: ax.set_ylabel(f"{ch_name}\nFreq (Hz)")
-
-            if row == n_channels - 1:
-                ax.set_xlabel("Time (s)")
-
-    plt.suptitle("Wavelet Power")
-    plt.tight_layout()
-
-    cbar = fig.colorbar(
-        im,
-        ax=axes.ravel().tolist()
-    )
-    cbar.set_label("Power")
+    plt.colorbar(label="Power (dB)")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Frequency (Hz)")
+    plt.title("O1 - TASK")
 
     plt.show()
+    return False
 
 def visualize_epoch(df, row, raw_pre, raw_task, raw_post):
 
@@ -373,6 +330,71 @@ def visualize_epoch(df, row, raw_pre, raw_task, raw_post):
     plt.show()
     input("Press enter to finish ....")
 
+
+def compute_wavelet_all_channels(raw,label,row,df):
+    date = df["DATE"][row]
+    id = df["ID"][row]
+    phase = df["LABEL"][row]
+    freqs = np.arange(1, 40, 1)
+    n_cycles = freqs / 2
+
+    data = raw.get_data()
+
+    power = tfr_array_morlet(
+        data[np.newaxis, :, :],
+        sfreq=raw.info["sfreq"],
+        freqs=freqs,
+        n_cycles=n_cycles,
+        output="power"
+    )[0]
+
+    fig, axes = plt.subplots(
+        nrows=len(raw.ch_names),
+        ncols=1,
+        figsize=(15, 20),
+        sharex=True
+    )
+
+    for ch_idx, ax in enumerate(axes):
+
+        power_db = 10 * np.log10(
+            power[ch_idx] + 1e-12
+        )
+
+        im = ax.imshow(
+            power_db,
+            aspect="auto",
+            origin="lower",
+            extent=[
+                raw.times[0],
+                raw.times[-1],
+                freqs[0],
+                freqs[-1]
+            ],
+            cmap="viridis"
+        )
+
+        ax.set_ylabel(
+            raw.ch_names[ch_idx]
+        )
+
+        cbar = fig.colorbar(
+            im,
+            ax=ax
+        )
+
+        cbar.set_label("dB")
+
+    axes[-1].set_xlabel("Time (s)")
+
+    #fig.suptitle(f"ID{id} - {date} - {phase} - {label} PHASE",fontsize=12)
+    fig.canvas.manager.set_window_title(f"Wavelet | ID{id} | {date} | {phase} | {label} PHASE")
+
+    plt.tight_layout()
+    plt.show()
+#visualize_epoch(df = info_df, row = row, raw_pre= raw_pre, raw_task = raw_task, raw_post = raw_post)
+
+
 fif_dict = {}
 
 for f in mne_files_path.rglob("*.fif"):
@@ -391,51 +413,11 @@ print("PRE duration :", raw_pre.times[-1])
 print("TASK duration:", raw_task.times[-1])
 print("POST duration:", raw_post.times[-1])
 #print(type(raw_task.annotations))
+
+
 raw = raw_post
-
-freqs = np.arange(1, 40, 1)
-n_cycles = freqs / 2
-
-data = raw.get_data()
-
-power = tfr_array_morlet(
-    data[np.newaxis, :, :],
-    sfreq=raw.info["sfreq"],
-    freqs=freqs,
-    n_cycles=n_cycles,
-    output="power"
-)[0]
-
-print(power.shape)
-ch_idx = raw.ch_names.index("O1")
-
-power_db = 10 * np.log10(
-    power[ch_idx] + 1e-12
-)
-plt.figure(figsize=(12,6))
-
-plt.imshow(
-    power_db,
-    aspect="auto",
-    origin="lower",
-    extent=[
-        raw.times[0],
-        raw.times[-1],
-        freqs[0],
-        freqs[-1]
-    ],
-    cmap="viridis"
-)
-
-plt.colorbar(label="Power (dB)")
-plt.xlabel("Time (s)")
-plt.ylabel("Frequency (Hz)")
-plt.title("O1 - TASK")
-
-plt.show()
-#visualize_epoch(df = info_df, row = row, raw_pre= raw_pre, raw_task = raw_task, raw_post = raw_post)
-#plot_wavelets(raw_pre,raw_task,raw_post)
-
+label = "POST"
+compute_wavelet_all_channels(raw,label,row,df = info_df)
 input("Press space to continue")
 
 #print(info_df.iloc[54,:].iloc[0])
