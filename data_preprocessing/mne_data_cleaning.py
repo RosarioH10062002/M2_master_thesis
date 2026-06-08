@@ -391,9 +391,13 @@ def compute_wavelet_all_channels(raw,label,row,df):
     fig.canvas.manager.set_window_title(f"Wavelet | ID{id} | {date} | {phase} | {label} PHASE")
 
     plt.tight_layout()
-    plt.show()
+    plt.show(block = False)
 #visualize_epoch(df = info_df, row = row, raw_pre= raw_pre, raw_task = raw_task, raw_post = raw_post)
 
+def show_pre_post_wavelet_all_channels(raw_pre,raw_post,row,info_df):
+    compute_wavelet_all_channels(raw = raw_pre,label = "PRE",row = row,df = info_df)
+    compute_wavelet_all_channels(raw = raw_post,label = "POST",row = row,df = info_df)
+    input("Press space to continue")
 
 fif_dict = {}
 
@@ -413,19 +417,140 @@ print("PRE duration :", raw_pre.times[-1])
 print("TASK duration:", raw_task.times[-1])
 print("POST duration:", raw_post.times[-1])
 #print(type(raw_task.annotations))
-
-
-raw = raw_post
-label = "POST"
-compute_wavelet_all_channels(raw,label,row,df = info_df)
-input("Press space to continue")
-
+#show_pre_post_wavelet_all_channels(raw_pre,raw_post,row,info_df)
 #print(info_df.iloc[54,:].iloc[0])
 #print(info_df.iloc[54,:].iloc[1])
 #print(info_df.iloc[54,:].iloc[2])
 
 
 
+def compare_wavelets(raw_pre, raw_post,channels,label):
+
+
+    freqs = np.arange(1, 40, 1)
+    n_cycles = freqs / 2
+
+    # PRE
+    power_pre = tfr_array_morlet(
+        raw_pre.get_data()[np.newaxis, :, :],
+        sfreq=raw_pre.info["sfreq"],
+        freqs=freqs,
+        n_cycles=n_cycles,
+        output="power"
+    )[0]
+
+    # POST
+    power_post = tfr_array_morlet(
+        raw_post.get_data()[np.newaxis, :, :],
+        sfreq=raw_post.info["sfreq"],
+        freqs=freqs,
+        n_cycles=n_cycles,
+        output="power"
+    )[0]
+
+    power_pre_db = 10 * np.log10(power_pre + 1e-12)
+    power_post_db = 10 * np.log10(power_post + 1e-12)
+
+    vmin = min(
+        power_pre_db.min(),
+        power_post_db.min()
+    )
+
+    vmax = max(
+        power_pre_db.max(),
+        power_post_db.max()
+    )
+
+    fig, axes = plt.subplots(
+        nrows = len(channels) * 2,
+        ncols=1,
+        figsize=(14, 18)
+    )
+
+    fig.canvas.manager.set_window_title(
+        f"{label} Channels PRE vs POST"
+    )
+
+    row_plot = 0
+
+    for ch in channels:
+
+        ch_pre = raw_pre.ch_names.index(ch)
+        ch_post = raw_post.ch_names.index(ch)
+
+        # PRE
+        im = axes[row_plot].imshow(
+            power_pre_db[ch_pre],
+            aspect="auto",
+            origin="lower",
+            extent=[
+                raw_pre.times[0],
+                raw_pre.times[-1],
+                freqs[0],
+                freqs[-1]
+            ],
+            cmap="viridis",
+            vmin=vmin,
+            vmax=vmax
+        )
+
+        axes[row_plot].set_ylabel(
+            f"{ch}\nPRE"
+        )
+
+        row_plot += 1
+
+        # POST
+        axes[row_plot].imshow(
+            power_post_db[ch_post],
+            aspect="auto",
+            origin="lower",
+            extent=[
+                raw_post.times[0],
+                raw_post.times[-1],
+                freqs[0],
+                freqs[-1]
+            ],
+            cmap="viridis",
+            vmin=vmin,
+            vmax=vmax
+        )
+
+        axes[row_plot].set_ylabel(
+            f"{ch}\nPOST"
+        )
+
+        row_plot += 1
+
+    axes[-1].set_xlabel("Time (s)")
+
+    cbar = fig.colorbar(
+        im,
+        ax=axes,
+        location="right",
+        fraction=0.02,
+        pad=0.02
+    )
+
+    cbar.set_label("Power (dB)")
+
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
+    plt.show(block = False)
+
+def get_frontal_channels(): 
+    return ["AF7", "AF8", "Fp1", "Fp2"]
+
+def get_occipital_channels(): 
+    return ["P7", "P8", "O1", "O2"]
+
+def show_wavelet_two_zones(raw_pre,raw_post): 
+    channels = get_frontal_channels()
+    compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Frontal")
+    channels = get_occipital_channels()
+    compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Occipital")
+    input("Press enter to continue...")
+
+show_wavelet_two_zones(raw_pre=raw_pre,raw_post = raw_post)
 #print(len(info_df))
 #print(info_df.index)
 #print(info_df.shape)
