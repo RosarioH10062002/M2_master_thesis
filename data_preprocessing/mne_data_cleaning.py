@@ -7,7 +7,7 @@ from collections import Counter
 
 mne_files_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Raw_data_eeg_psychopy_trimmed")
 info_datasets = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Important_datasets\all_ids.csv")
-
+segments_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Segments")
 
 def load_dataset():
 
@@ -206,6 +206,88 @@ def get_summary():
 
 get_summary()
 
+
+def preprocessed_subject(info_df, row):
+    print(info_df.loc[row, ["ID","DATE","LABEL"]])
+    visualize_signal(df=info_df,row=row,clean=True)
+
+def create_epochs(row):
+     
+    id = row["ID"]
+    date = row["DATE"]
+    phase = row["LABEL"]
+
+    raw = mne.io.read_raw_fif(row["ICA PATH"],preload=True)
+
+    annotations = get_markers_annotations(
+        id=id,
+        date=date,
+        phase=phase
+    )
+
+    raw.set_annotations(annotations)
+
+    ann = raw.annotations
+
+    t90 = ann.onset[ann.description == "90"][0]
+    t91 = ann.onset[ann.description == "91"][0]
+    t92 = ann.onset[ann.description == "92"][0]
+    t93 = ann.onset[ann.description == "93"][0]
+
+    margin = 2
+
+    raw_pre = raw.copy().crop(max(0, t90-margin),t91+margin)
+    raw_task = raw.copy().crop(max(0, t91-margin),t92+margin)
+    raw_post = raw.copy().crop(max(0, t92-margin),min(raw.times[-1], t93+margin))
+
+    subject_dir = Path(segments_path, f"ID{id}")
+    raw_pre.save(
+        Path(subject_dir,
+            f"ID{id}_{date}_{phase}_PRE_raw.fif"),
+        overwrite=True
+    )
+
+    raw_task.save(
+        Path(subject_dir,
+            f"ID{id}_{date}_{phase}_TASK_raw.fif"),
+        overwrite=True
+    )
+
+    raw_post.save(
+        Path(subject_dir,
+            f"ID{id}_{date}_{phase}_POST_raw.fif"),
+        overwrite=True
+    )
+    return raw_pre, raw_task, raw_post
+
+def visualize_epoch(df, row, raw_pre, raw_task, raw_post):
+
+    epochs = [raw_pre, raw_task, raw_post]
+    labels = ["PRE", "TASK", "POST"]
+    date = df["DATE"][row]
+    id = df["ID"][row]
+    phase = df["LABEL"][row]
+
+    for ep, lab in zip(epochs, labels):
+
+        ep.plot(scalings="auto",title=f"ID{id} - {date} - {phase} - {lab}")
+
+    fig, axes = plt.subplots(
+        1, 3,
+        figsize=(15,5),
+        sharey=True
+    )
+
+    for ep, lab, ax in zip(epochs, labels, axes):
+        psd = ep.compute_psd(fmax=40)
+        psd.plot(axes=ax,show=False)
+        ax.set_title(lab)
+
+    fig.suptitle(f"ID{id} - {date} - {phase}",fontsize=16)
+    plt.tight_layout()
+    plt.show()
+    input("Press enter to finish ....")
+
 fif_dict = {}
 
 for f in mne_files_path.rglob("*.fif"):
@@ -213,14 +295,21 @@ for f in mne_files_path.rglob("*.fif"):
 
 print(f"Found {len(fif_dict)} FIF files")
 
+#MAIN-----------------------------------------------------------------------------------
 info_df = load_dataset()
+#preprocessed_subject(info_df=info_df, row=3)
+row =54 
+print(info_df.loc[row, ["ID","DATE","LABEL"]])
+raw_pre, raw_task, raw_post = create_epochs(info_df.loc[row,:])
+print(raw_pre.annotations)
+visualize_epoch(df = info_df, row = row, raw_pre= raw_pre, raw_task = raw_task, raw_post = raw_post)
+
+
 #print(info_df.iloc[54,:].iloc[0])
 #print(info_df.iloc[54,:].iloc[1])
 #print(info_df.iloc[54,:].iloc[2])
 
-row = 3
-print(info_df.loc[row, ["ID","DATE","LABEL"]])
-visualize_signal(df=info_df,row=row,clean=True)
+
 
 #print(len(info_df))
 #print(info_df.index)
