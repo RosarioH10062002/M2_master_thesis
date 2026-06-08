@@ -406,23 +406,6 @@ for f in mne_files_path.rglob("*.fif"):
 
 print(f"Found {len(fif_dict)} FIF files")
 
-#MAIN-----------------------------------------------------------------------------------
-info_df = load_dataset()
-#preprocessed_subject(info_df=info_df, row=3)
-row =54 
-print(info_df.loc[row, ["ID","DATE","LABEL"]])
-raw_pre, raw_task, raw_post = create_epochs(info_df.loc[row,:])
-print(f"raw_pre: {raw_pre.annotations} ,\n raw_during: {raw_task.annotations},\n raw_post: {raw_post.annotations}")
-print("PRE duration :", raw_pre.times[-1])
-print("TASK duration:", raw_task.times[-1])
-print("POST duration:", raw_post.times[-1])
-#print(type(raw_task.annotations))
-#show_pre_post_wavelet_all_channels(raw_pre,raw_post,row,info_df)
-#print(info_df.iloc[54,:].iloc[0])
-#print(info_df.iloc[54,:].iloc[1])
-#print(info_df.iloc[54,:].iloc[2])
-
-
 
 def compare_wavelets(raw_pre, raw_post,channels,label):
 
@@ -550,8 +533,27 @@ def show_wavelet_two_zones(raw_pre,raw_post):
     compare_wavelets(raw_pre=raw_pre,raw_post=raw_post, channels = channels, label = "Occipital")
     input("Press enter to continue...")
 
-show_wavelet_two_zones(raw_pre=raw_pre,raw_post = raw_post)
-#print(len(info_df))
-#print(info_df.index)
-#print(info_df.shape)
+#MAIN-----------------------------------------------------------------------------------
+info_df = load_dataset()
+#preprocessed_subject(info_df=info_df, row=3)
+for row, session in info_df.iterrows():
+    #row =54 
+    if info_df.loc[row, "COMPANY"] == "OpenBCI_EEG_eeg":
+        continue
+    else: 
+        print(info_df.loc[row, ["ID","DATE","LABEL"]])
+        raw_pre, raw_task, raw_post = create_epochs(info_df.loc[row,:])
+        print(f"raw_pre: {raw_pre.annotations} ,\n raw_during: {raw_task.annotations},\n raw_post: {raw_post.annotations}")
+        print("PRE duration :", raw_pre.times[-1])
+        print("TASK duration:", raw_task.times[-1])
+        print("POST duration:", raw_post.times[-1])
+        #print(type(raw_task.annotations))
+        #show_pre_post_wavelet_all_channels(raw_pre,raw_post,row,info_df)
+        #print(info_df.iloc[54,:].iloc[0])
+        #print(info_df.iloc[54,:].iloc[1])
+        #print(info_df.iloc[54,:].iloc[2])
+        show_wavelet_two_zones(raw_pre=raw_pre,raw_post = raw_post)
+        #print(len(info_df))
+        #print(info_df.index)
+        #print(info_df.shape)
 
