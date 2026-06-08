@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt
 from collections import Counter
+from mne.time_frequency import tfr_array_morlet
+
 
 mne_files_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Raw_data_eeg_psychopy_trimmed")
 info_datasets = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Important_datasets\all_ids.csv")
@@ -272,11 +274,7 @@ def visualize_epoch(df, row, raw_pre, raw_task, raw_post):
 
         ep.plot(scalings="auto",title=f"ID{id} - {date} - {phase} - {lab}")
 
-    fig, axes = plt.subplots(
-        1, 3,
-        figsize=(15,5),
-        sharey=True
-    )
+    fig, axes = plt.subplots(1, 3, figsize=(15,5), sharey=True)
 
     for ep, lab, ax in zip(epochs, labels, axes):
         psd = ep.compute_psd(fmax=40)
