@@ -996,11 +996,11 @@ def compute_bandpower_summary(
 
         results[
             f"PRE_Frontal_{band_name}"
-        ] = np.mean(frontal[mask])
+        ] = np.median(frontal[mask])
 
         results[
             f"PRE_Occipital_{band_name}"
-        ] = np.mean(occipital[mask])
+        ] = np.median(occipital[mask])
 
         # POST
         times, frontal = region_bandpower(
@@ -1021,11 +1021,11 @@ def compute_bandpower_summary(
 
         results[
             f"POST_Frontal_{band_name}"
-        ] = np.mean(frontal[mask])
+        ] = np.median(frontal[mask])
 
         results[
             f"POST_Occipital_{band_name}"
-        ] = np.mean(occipital[mask])
+        ] = np.median(occipital[mask])
 
     return results
 def build_dataframe(info_df):
@@ -1121,12 +1121,15 @@ def statistics_phase_A_vs_B(
 
     return stat, p
 
-def pipeline(info_df,row,keyword): 
+def pipeline(info_df,rowN): 
     print(info_df.loc[row, ["ID","DATE","LABEL"]])
-    keyword = input("Pipeline? Y/N")
+    keyword = input("Visualize? Y/N")
+    if keyword == "Y": 
+        visualize_signal(info_df, row, clean = False)
+    keyword = input("Preprocessed? Y/N")
     if keyword == "Y": 
         preprocessed_subject(info_df=info_df, row=row)
-    visualize_signal(info_df, row, clean = False)
+
     keyword = input("Create epochs? Y/N")
     if keyword == "Y": 
          raw_pre, raw_task, raw_post = create_epochs(info_df.loc[row,:])
@@ -1149,19 +1152,40 @@ def pipeline(info_df,row,keyword):
         date=info_df.loc[row,"DATE"],
         phase=info_df.loc[row,"LABEL"])
 
-def pipeline_statistics(id): 
+def pipeline_statistics(id):
+
     info_df = load_dataset()
+
     bandpower_df = build_dataframe_id(
-    info_df,
-    id=id)
-    statistics_phase_A_vs_B(
-    bandpower_df,
-    variable="PRE_Occipital_Alpha")
+        info_df,
+        id=id
+    )
 
+    variables = [
+        "POST_Frontal_Delta",
+        "POST_Frontal_Theta",
+        "POST_Frontal_Alpha",
+        "POST_Frontal_Beta",
+        "POST_Frontal_Gamma"
+    ]
 
-    plt.figure(figsize=(5,4))
+    all_results = []
 
-    sns.boxplot(
+    for variable in variables:
+
+        result = statistics_phase_A_vs_B(
+            bandpower_df,
+            variable=variable
+        )
+
+        all_results.append(result)
+
+    results_df = pd.DataFrame(all_results)
+
+    print(results_df)
+
+    return results_df
+    '''sns.boxplot(
         data=bandpower_df,
         x="PHASE",
         y="PRE_Occipital_Alpha"
@@ -1172,13 +1196,16 @@ def pipeline_statistics(id):
         x="PHASE",
         y="PRE_Occipital_Alpha",
         color="black"
-    )
+    )'''
 
-    plt.show()
+
 
 
 #MAIN-----------------------------------------------------------------------------------
-print(pipeline_statistics(id = 13))
+info_df = load_dataset()
+row = 54
+pipeline(info_df,row)
+#print(pipeline_statistics(id = 13))
 #info_df = load_dataset()
 '''row = 20
 for row in range(29, 35):
