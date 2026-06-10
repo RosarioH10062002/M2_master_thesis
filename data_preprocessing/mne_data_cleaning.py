@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 from mne.time_frequency import tfr_array_morlet
+from scipy.ndimage import gaussian_filter1d
+from scipy.stats import mannwhitneyu
+import seaborn as sns
 
 
 mne_files_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Raw_data_eeg_psychopy_trimmed")
@@ -537,9 +540,703 @@ def show_wavelet_two_zones(raw_pre,raw_post,row,df):
 
 def look_specific_wavelet(): 
     return None 
+
+def region_bandpower(
+    raw,
+    channels,
+    l_freq,
+    h_freq,
+    smooth_seconds=1
+):
+
+    raw_band = raw.copy()
+
+    raw_band.filter(
+        l_freq=l_freq,
+        h_freq=h_freq,
+        verbose=False
+    )
+
+    raw_band.apply_hilbert(
+        envelope=True
+    )
+
+    power = raw_band.get_data()**2
+
+    idx = [
+        raw_band.ch_names.index(ch)
+        for ch in channels
+    ]
+
+    regional_power = power[idx].mean(axis=0)
+
+    sigma = smooth_seconds * raw_band.info["sfreq"]
+
+    regional_power = gaussian_filter1d(
+        regional_power,
+        sigma=sigma
+    )
+
+    return raw_band.times, regional_power
+
+def plot_regions(
+    raw,
+    l_freq,
+    h_freq,
+    band_name=""
+):
+
+    times, frontal = region_bandpower(
+        raw,
+        get_frontal_channels(),
+        l_freq,
+        h_freq
+    )
+
+    _, occipital = region_bandpower(
+        raw,
+        get_occipital_channels(),
+        l_freq,
+        h_freq
+    )
+
+    plt.figure(figsize=(12,5))
+
+    plt.plot(
+        times,
+        frontal,
+        label="Frontal"
+    )
+
+    plt.plot(
+        times,
+        occipital,
+        label="Occipital"
+    )
+    plt.axvspan(0, 62, alpha=0.1, label="Eyes open", color = "yellow")
+    plt.axvspan(62, 122, alpha=0.1, label="Eyes closed", color = "blue")
+
+
+    plt.xlabel("Time (s)")
+    plt.ylabel("Power (uV²)")
+
+    plt.title(
+        f"{band_name} Power"
+    )
+
+    plt.legend()
+    plt.tight_layout()
+    plt.show(block = False)
+def compare_pre_post_regions(
+    raw_pre,
+    raw_post,
+    id,
+    date,
+    phase,
+    l_freq,
+    h_freq,
+    band_name="Alpha"
+):
+
+    times_pre, pre_frontal = region_bandpower(
+        raw_pre,
+        get_frontal_channels(),
+        l_freq,
+        h_freq
+    )
+
+    _, pre_occipital = region_bandpower(
+        raw_pre,
+        get_occipital_channels(),
+        l_freq,
+        h_freq
+    )
+
+    times_post, post_frontal = region_bandpower(
+        raw_post,
+        get_frontal_channels(),
+        l_freq,
+        h_freq
+    )
+
+    _, post_occipital = region_bandpower(
+        raw_post,
+        get_occipital_channels(),
+        l_freq,
+        h_freq
+    )
+
+    fig, ax = plt.subplots(
+        figsize=(14,6)
+    )
+
+    ax.plot(
+        times_pre,
+        pre_frontal,
+        label="PRE Frontal"
+    )
+
+    ax.plot(
+        times_pre,
+        pre_occipital,
+        label="PRE Occipital"
+    )
+
+    ax.plot(
+        times_post,
+        post_frontal,
+        label="POST Frontal"
+    )
+
+    ax.plot(
+        times_post,
+        post_occipital,
+        label="POST Occipital"
+    )
+
+    ax.axvspan(
+        0,
+        60,
+        alpha=0.1,
+        color="yellow"
+    )
+
+    ax.axvspan(
+        60,
+        120,
+        alpha=0.1,
+        color="lightblue"
+    )
+
+    ax.text(
+        30,
+        ax.get_ylim()[1]*0.95,
+        "Eyes Open",
+        ha="center"
+    )
+
+    ax.text(
+        90,
+        ax.get_ylim()[1]*0.95,
+        "Eyes Closed",
+        ha="center"
+    )
+
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Power (V²)")
+    ax.set_title(
+        f"{band_name} Power\nID{id} | {date} | {phase}"
+    )
+
+    ax.legend()
+
+    fig.canvas.manager.set_window_title(
+        f"{band_name} PRE vs POST | ID{id} | {date} | {phase}"
+    )
+
+    plt.tight_layout()
+    plt.show(block=False)
+def compare_pre_post_regions_eyes_open(
+    raw_pre,
+    raw_post,
+    id,
+    date,
+    phase,
+    l_freq,
+    h_freq,
+    band_name="Alpha"
+):
+
+    times_pre, pre_frontal = region_bandpower(
+        raw_pre,
+        get_frontal_channels(),
+        l_freq,
+        h_freq
+    )
+
+    _, pre_occipital = region_bandpower(
+        raw_pre,
+        get_occipital_channels(),
+        l_freq,
+        h_freq
+    )
+
+    times_post, post_frontal = region_bandpower(
+        raw_post,
+        get_frontal_channels(),
+        l_freq,
+        h_freq
+    )
+
+    _, post_occipital = region_bandpower(
+        raw_post,
+        get_occipital_channels(),
+        l_freq,
+        h_freq
+    )
+
+    # Solo Eyes Open
+    #mask_pre = times_pre <= 60
+    #mask_post = times_post <= 60
+    mask_pre = (times_pre >= 2) & (times_pre <= 60)
+    mask_post = (times_post >= 2) & (times_post <= 60)
+
+    fig, ax = plt.subplots(
+        figsize=(14,6)
+    )
+
+    ax.plot(
+        times_pre[mask_pre],
+        pre_frontal[mask_pre],
+        label="PRE Frontal"
+    )
+
+    ax.plot(
+        times_pre[mask_pre],
+        pre_occipital[mask_pre],
+        label="PRE Occipital"
+    )
+
+    ax.plot(
+        times_post[mask_post],
+        post_frontal[mask_post],
+        label="POST Frontal"
+    )
+
+    ax.plot(
+        times_post[mask_post],
+        post_occipital[mask_post],
+        label="POST Occipital"
+    )
+
+    ax.axvspan(
+        0,
+        60,
+        alpha=0.1,
+        color="yellow",
+        label="Eyes Open"
+    )
+
+    ymax = ax.get_ylim()[1]
+
+    ax.text(
+        30,
+        ymax * 0.95,
+        "Eyes Open",
+        ha="center"
+    )
+
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Power (V²)")
+
+    #ax.set_title(f"{band_name} Power (Eyes Open)\nID{id} | {date} | {phase}")
+
+    ax.legend()
+
+    fig.canvas.manager.set_window_title(
+        f"{band_name} PRE vs POST Eyes Open | ID{id} | {date} | {phase}"
+    )
+
+    plt.tight_layout()
+    plt.show(block=False)
+
+def plot_all_bands_pre_post(
+    raw_pre,
+    raw_post,
+    id,
+    date,
+    phase
+):
+
+    bands = {
+        "Delta": (0.5, 4),
+        "Theta": (4, 8),
+        "Alpha": (8, 12),
+        "Beta": (13, 30),
+        "Gamma": (30, 45)
+    }
+
+    fig, axes = plt.subplots(
+        len(bands),
+        1,
+        figsize=(15,18),
+        sharex=True
+    )
+
+    for ax, (band_name, (l_freq, h_freq)) in zip(
+        axes,
+        bands.items()
+    ):
+
+        times_pre, pre_frontal = region_bandpower(
+            raw_pre,
+            get_frontal_channels(),
+            l_freq,
+            h_freq
+        )
+
+        _, pre_occipital = region_bandpower(
+            raw_pre,
+            get_occipital_channels(),
+            l_freq,
+            h_freq
+        )
+
+        times_post, post_frontal = region_bandpower(
+            raw_post,
+            get_frontal_channels(),
+            l_freq,
+            h_freq
+        )
+
+        _, post_occipital = region_bandpower(
+            raw_post,
+            get_occipital_channels(),
+            l_freq,
+            h_freq
+        )
+
+        mask_pre = (times_pre >= 4) & (times_pre <= 60)
+        mask_post = (times_post >= 4) & (times_post <= 60)
+
+        ax.plot(
+            times_pre[mask_pre],
+            pre_frontal[mask_pre],
+            label="PRE Frontal"
+        )
+
+        ax.plot(
+            times_pre[mask_pre],
+            pre_occipital[mask_pre],
+            label="PRE Occipital"
+        )
+
+        ax.plot(
+            times_post[mask_post],
+            post_frontal[mask_post],
+            label="POST Frontal"
+        )
+
+        ax.plot(
+            times_post[mask_post],
+            post_occipital[mask_post],
+            label="POST Occipital"
+        )
+
+        ax.set_title(
+            f"{band_name} ({l_freq}-{h_freq} Hz)", fontsize = 8
+        )
+        
+
+        ax.set_ylabel("Power")
+
+        ax.axvspan(
+            0,
+            60,
+            alpha=0.05,
+            color="yellow"
+        )
+
+    axes[0].legend()
+
+    axes[-1].set_xlabel(
+        "Time (s)"
+    )
+
+    #fig.suptitle(f"PRE vs POST (Eyes Open)\nID{id} | {date} | {phase}",fontsize=16)
+
+    fig.canvas.manager.set_window_title(
+        f"All Bands | ID{id} | {date} | {phase}"
+    )
+
+    plt.tight_layout()
+
+    plt.show(block=False)
+
+def compute_bandpower_summary(
+    raw_pre,
+    raw_post,
+    id,
+    date,
+    phase
+):
+
+    bands = {
+        "Delta": (0.5,4),
+        "Theta": (4,8),
+        "Alpha": (8,12),
+        "Beta": (13,30),
+        "Gamma": (30,45)
+    }
+
+    results = {
+        "ID": id,
+        "DATE": date,
+        "PHASE": phase
+    }
+
+    for band_name, (l_freq,h_freq) in bands.items():
+
+        # PRE
+        times, frontal = region_bandpower(
+            raw_pre,
+            get_frontal_channels(),
+            l_freq,
+            h_freq
+        )
+
+        _, occipital = region_bandpower(
+            raw_pre,
+            get_occipital_channels(),
+            l_freq,
+            h_freq
+        )
+
+        mask = (times >= 4) & (times <= 60)
+
+        results[
+            f"PRE_Frontal_{band_name}"
+        ] = np.mean(frontal[mask])
+
+        results[
+            f"PRE_Occipital_{band_name}"
+        ] = np.mean(occipital[mask])
+
+        # POST
+        times, frontal = region_bandpower(
+            raw_post,
+            get_frontal_channels(),
+            l_freq,
+            h_freq
+        )
+
+        _, occipital = region_bandpower(
+            raw_post,
+            get_occipital_channels(),
+            l_freq,
+            h_freq
+        )
+
+        mask = (times >= 4) & (times <= 60)
+
+        results[
+            f"POST_Frontal_{band_name}"
+        ] = np.mean(frontal[mask])
+
+        results[
+            f"POST_Occipital_{band_name}"
+        ] = np.mean(occipital[mask])
+
+    return results
+def build_dataframe(info_df):
+    all_results = []
+
+    for row in range(len(info_df)):
+
+        raw_pre, raw_task, raw_post = create_epochs(
+            info_df.loc[row,:]
+        )
+
+        summary = compute_bandpower_summary(
+            raw_pre,
+            raw_post,
+            id=info_df.loc[row,"ID"],
+            date=info_df.loc[row,"DATE"],
+            phase=info_df.loc[row,"LABEL"]
+        )
+
+        all_results.append(summary)
+
+    bandpower_df = pd.DataFrame(
+        all_results
+    )
+    return bandpower_df
+
+def statistics_pre_post(bandpower_df): 
+    A = bandpower_df.loc[
+        bandpower_df["PHASE"]=="A",
+        "PRE_Occipital_Alpha"
+    ]
+
+    B = bandpower_df.loc[
+        bandpower_df["PHASE"]=="B",
+        "PRE_Occipital_Alpha"
+    ]
+
+    return mannwhitneyu(A,B)
+
+def build_dataframe_id(info_df, id):
+
+    all_results = []
+    info_df = info_df[info_df["COMPANY"] != "OpenBCI_EEG_eeg"]
+    subject_rows = info_df[
+        info_df["ID"] == id
+    ].index
+
+    for row in subject_rows:
+
+        print(info_df.loc[row, ["ID","DATE","LABEL"]])
+
+        raw_pre, raw_task, raw_post = create_epochs(
+            info_df.loc[row,:]
+        )
+
+        summary = compute_bandpower_summary(
+            raw_pre,
+            raw_post,
+            id=info_df.loc[row,"ID"],
+            date=info_df.loc[row,"DATE"],
+            phase=info_df.loc[row,"LABEL"]
+        )
+
+        all_results.append(summary)
+
+    return pd.DataFrame(all_results)
+def statistics_phase_A_vs_B(
+    bandpower_df,
+    variable="PRE_Occipital_Alpha"
+):
+
+    A = bandpower_df.loc[
+        bandpower_df["PHASE"]=="A",
+        variable
+    ]
+
+    B = bandpower_df.loc[
+        bandpower_df["PHASE"]=="B",
+        variable
+    ]
+
+    print(f"Length A: {len(A)}")
+    print(f"Length B: {len(B)}")
+
+    if len(A) == 0 or len(B) == 0:
+        print("Missing A or B sessions.")
+        return None
+
+    stat, p = mannwhitneyu(A, B)
+
+    print(f"Statistic={stat}")
+    print(f"p-value={p}")
+
+    return stat, p
+
+def pipeline(info_df,row,keyword): 
+    print(info_df.loc[row, ["ID","DATE","LABEL"]])
+    keyword = input("Pipeline? Y/N")
+    if keyword == "Y": 
+        preprocessed_subject(info_df=info_df, row=row)
+    visualize_signal(info_df, row, clean = False)
+    keyword = input("Create epochs? Y/N")
+    if keyword == "Y": 
+         raw_pre, raw_task, raw_post = create_epochs(info_df.loc[row,:])
+         print(f"raw_pre: {raw_pre.annotations} ,\n raw_during: {raw_task.annotations},\n raw_post: {raw_post.annotations}")
+         print("PRE duration :", raw_pre.times[-1])
+         print("TASK duration:", raw_task.times[-1])
+         print("POST duration:", raw_post.times[-1])
+         visualize_epoch(df = info_df, row = row, raw_pre= raw_pre, raw_task = raw_task, raw_post = raw_post)
+    keyword = input("Create wavelets? Y/N")
+    if keyword == "Y": 
+        show_pre_post_wavelet_all_channels(raw_pre,raw_post,row,info_df)
+        show_wavelet_two_zones(raw_pre=raw_pre,raw_post = raw_post, row = row, df = info_df)
+
+    keyword = input("Plot band power? Two zonesY/N")
+    if keyword == "Y": 
+        plot_all_bands_pre_post(
+        raw_pre,
+        raw_post,
+        id=info_df.loc[row,"ID"],
+        date=info_df.loc[row,"DATE"],
+        phase=info_df.loc[row,"LABEL"])
+
+def pipeline_statistics(id): 
+    info_df = load_dataset()
+    bandpower_df = build_dataframe_id(
+    info_df,
+    id=id)
+    statistics_phase_A_vs_B(
+    bandpower_df,
+    variable="PRE_Occipital_Alpha")
+
+
+    plt.figure(figsize=(5,4))
+
+    sns.boxplot(
+        data=bandpower_df,
+        x="PHASE",
+        y="PRE_Occipital_Alpha"
+    )
+
+    sns.stripplot(
+        data=bandpower_df,
+        x="PHASE",
+        y="PRE_Occipital_Alpha",
+        color="black"
+    )
+
+    plt.show()
+
+
 #MAIN-----------------------------------------------------------------------------------
-info_df = load_dataset()
-#preprocessed_subject(info_df=info_df, row=3)
+print(pipeline_statistics(id = 13))
+#info_df = load_dataset()
+'''row = 20
+for row in range(29, 35):
+
+    print(info_df.loc[row, ["ID","DATE","LABEL"]])
+
+    raw_pre, raw_task, raw_post = create_epochs(
+        info_df.loc[row,:]
+    )
+
+    plot_all_bands_pre_post(
+        raw_pre,
+        raw_post,
+        id=info_df.loc[row,"ID"],
+        date=info_df.loc[row,"DATE"],
+        phase=info_df.loc[row,"LABEL"]
+    )'''
+'''plot_regions(
+    raw_pre,
+    8,
+    12,
+    "Alpha"
+)
+plot_regions(
+    raw_post,
+    8,
+    12,
+    "Alpha"
+)'''
+'''compare_pre_post_regions(
+    raw_pre,
+    raw_post,
+    id=info_df.loc[row,"ID"],
+    date=info_df.loc[row,"DATE"],
+    phase=info_df.loc[row,"LABEL"],
+    l_freq=8,
+    h_freq=12,
+    band_name="Alpha"
+)'''
+'''compare_pre_post_regions_eyes_open(
+    raw_pre,
+    raw_post,
+    id=info_df.loc[row,"ID"],
+    date=info_df.loc[row,"DATE"],
+    phase=info_df.loc[row,"LABEL"],
+    l_freq=8,
+    h_freq=12,
+    band_name="Alpha"
+)'''
+'''plot_all_bands_pre_post(
+    raw_pre,
+    raw_post,
+    id=info_df.loc[row,"ID"],
+    date=info_df.loc[row,"DATE"],
+    phase=info_df.loc[row,"LABEL"]
+)'''
+input("Pres space to continue...")
+'''#preprocessed_subject(info_df=info_df, row=3)
 for row, session in info_df.iterrows():
     #row =54 
     if info_df.loc[row, "COMPANY"] == "OpenBCI_EEG_eeg":
@@ -560,4 +1257,4 @@ for row, session in info_df.iterrows():
         #print(len(info_df))
         #print(info_df.index)
         #print(info_df.shape)
-
+'''
