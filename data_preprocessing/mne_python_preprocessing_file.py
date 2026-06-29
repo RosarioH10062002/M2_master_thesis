@@ -16,6 +16,9 @@ segments_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Seg
 results_EEG_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results")
 dataframe_results = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results\eeg_dataframe.csv")
 
+final_dataframe_results = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results\eeg_dataframe.csv")
+
+
 
 BAD_CHANNELS = {
     (2, "27-05-26", "A"): "AF7,P8",
