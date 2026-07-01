@@ -81,6 +81,9 @@ dataset <- dataset %>%
     Incorrect_Go = 72 - Correct_Go
   )
 
+write.csv(dataset, "behavior_eeg_true_clean.csv",
+  row.names = FALSE
+)
 #------------------------------
 dataset$ID <- factor(dataset$ID)
 dataset$Session <- factor(dataset$Session)
@@ -929,4 +932,36 @@ AIC(glmm1, glmm2)
 BIC(glmm1, glmm2)
 anova(glmm1, glmm2) # EEG does NOT improve the model 
 
-#-------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------CAN WE FIND AN IMPROVEMENT OF THE PHASE B USING THE METRICS IN 30,20,12 HZ 
+
+m30 <- lmer(
+  Accuracy_NoGo_30 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_30 + MeanGoRT_30 + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m30)
+
+m20 <- lmer(
+  Accuracy_NoGo_20 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_20 + MeanGoRT_20 + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m20)
+
+m12 <- lmer(
+  Accuracy_NoGo_12 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_12 + MeanGoRT_12 + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m12)
+
+AIC(m1_5_1, m30,m20,m12)
+BIC(m1_5_1, m30,m20,m12)
+anova(m1_5_1,m30,m20,m12)
+
+drop1(m12, test = "Chisq")
+
+
