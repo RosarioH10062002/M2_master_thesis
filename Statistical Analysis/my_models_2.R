@@ -942,6 +942,15 @@ m30 <- lmer(
 )
 summary(m30)
 
+m30_d <- lmer(
+  DPrime_30 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_30 + MeanGoRT_30 + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m30_d)
+drop1(m30_d, test = "Chisq")
+
 m20 <- lmer(
   Accuracy_NoGo_20 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_20 + MeanGoRT_20 + (1+ Session_Number | ID),
   data = dataset_nomood_na,
@@ -949,6 +958,15 @@ m20 <- lmer(
   control = lmerControl(optimizer = "bobyqa")
 )
 summary(m20)
+
+m20_d <- lmer(
+  DPrime_20 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_20 + MeanGoRT_20 + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m20_d) #***
+
 
 m12 <- lmer(
   Accuracy_NoGo_12 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_12 + MeanGoRT_12 + (1+ Session_Number | ID),
@@ -958,10 +976,30 @@ m12 <- lmer(
 )
 summary(m12)
 
+m12_d <- lmer(
+  DPrime_12 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_12 + MeanGoRT_12 + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m12_d) #***
+
+# COMPARING WITH THE ACCURACY_NOGO
 AIC(m1_5_1, m30,m20,m12)
 BIC(m1_5_1, m30,m20,m12)
 anova(m1_5_1,m30,m20,m12)
 
 drop1(m12, test = "Chisq")
+# COMPARING WITH THE DPRIME
+m1_5_1_d <- lmer(
+  DPrime_All ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + Mean_Variability_Overall + MeanGoRT_All + (1+ Session_Number | ID),
+  data = dataset_nomood_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m1_5_1_d)
 
+AIC(m1_5_1_d, m30,m20_d,m12_d)
+BIC(m1_5_1_d, m30,m20_d,m12_d)
+anova(m1_5_1_d,m30_d,m20_d,m12_d)
 
