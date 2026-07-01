@@ -314,7 +314,7 @@ VarCorr(m1)
 #plot(resid(m1) ~ fitted(m1))
 #qqnorm(resid(m1))
 #qqline(resid(m1))
-#acf(resid(m1))
+acf(resid(m1))
 
 #model_data <- model.frame(m1)
 #model_data$resid <- resid(m1)
@@ -373,7 +373,7 @@ anova(m1_2, m1_3) # Its better without volume
 drop1(m1_3, test = "Chisq")
 
 # I AM GONNA DELETE MOOD 
-dataset_nomood_na <- dataset[!is.na(dataset$MOOD), ] 
+dataset_nomood_na <- dataset[!is.na(dataset$MOOD),] 
 m1_3_1 <- lmer(
   Mean_Accuracy_General ~ Session_Number + PHASE + PHASE:Session_Number + ASRS + MOOD + TIRED + Mean_Variability_Overall + MeanGoRT_All + (1+ Session_Number | ID),
   data = dataset_nomood_na,
@@ -933,73 +933,179 @@ BIC(glmm1, glmm2)
 anova(glmm1, glmm2) # EEG does NOT improve the model 
 
 #-------------------------------------------------------------------------------------------CAN WE FIND AN IMPROVEMENT OF THE PHASE B USING THE METRICS IN 30,20,12 HZ 
+dataset_notired_na <- dataset[!is.na(dataset$TIRED),] 
+final_model <- lmer(
+  Mean_Accuracy_General ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + Mean_Variability_Overall + MeanGoRT_All + (1+ Session_Number | ID),
+  data = dataset_notired_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(final_model)
 
 m30 <- lmer(
   Accuracy_NoGo_30 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_30 + MeanGoRT_30 + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
+  data = dataset_notired_na,
   REML = FALSE,
   control = lmerControl(optimizer = "bobyqa")
 )
 summary(m30)
+drop1(m30, test = "Chisq")
+
+m20 <- lmer(
+  Accuracy_NoGo_20 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_20 + MeanGoRT_20 + (1+ Session_Number | ID),
+  data = dataset_notired_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m20)
+
+m12 <- lmer(
+  Accuracy_NoGo_12 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_12 + MeanGoRT_12 + (1+ Session_Number | ID),
+  data = dataset_notired_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m12)
+
+
+# COMPARING WITH THE ACCURACY_NOGO
+AIC(final_model, m30,m20,m12)
+BIC(final_model, m30,m20,m12)
+anova(final_model,m30,m20,m12)
+
+# ---Model DPRIME
+final_model_d <- lmer(
+  DPrime_All ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + Mean_Variability_Overall + MeanGoRT_All + (1+ Session_Number | ID),
+  data = dataset_notired_na,
+  REML = FALSE,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(final_model_d)
 
 m30_d <- lmer(
   DPrime_30 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_30 + MeanGoRT_30 + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
+  data = dataset_notired_na,
   REML = FALSE,
   control = lmerControl(optimizer = "bobyqa")
 )
 summary(m30_d)
 drop1(m30_d, test = "Chisq")
 
-m20 <- lmer(
-  Accuracy_NoGo_20 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_20 + MeanGoRT_20 + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
-  REML = FALSE,
-  control = lmerControl(optimizer = "bobyqa")
-)
-summary(m20)
+
 
 m20_d <- lmer(
   DPrime_20 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_20 + MeanGoRT_20 + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
+  data = dataset_notired_na,
   REML = FALSE,
   control = lmerControl(optimizer = "bobyqa")
 )
 summary(m20_d) #***
 
 
-m12 <- lmer(
-  Accuracy_NoGo_12 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_12 + MeanGoRT_12 + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
-  REML = FALSE,
-  control = lmerControl(optimizer = "bobyqa")
-)
-summary(m12)
 
 m12_d <- lmer(
   DPrime_12 ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + VarGoRT_12 + MeanGoRT_12 + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
+  data = dataset_notired_na,
   REML = FALSE,
   control = lmerControl(optimizer = "bobyqa")
 )
 summary(m12_d) #***
 
-# COMPARING WITH THE ACCURACY_NOGO
-AIC(m1_5_1, m30,m20,m12)
-BIC(m1_5_1, m30,m20,m12)
-anova(m1_5_1,m30,m20,m12)
-
 drop1(m12, test = "Chisq")
-# COMPARING WITH THE DPRIME
-m1_5_1_d <- lmer(
-  DPrime_All ~ Session_Number + PHASE + PHASE:Session_Number + TIRED + Mean_Variability_Overall + MeanGoRT_All + (1+ Session_Number | ID),
-  data = dataset_nomood_na,
-  REML = FALSE,
-  control = lmerControl(optimizer = "bobyqa")
-)
-summary(m1_5_1_d)
 
-AIC(m1_5_1_d, m30,m20_d,m12_d)
-BIC(m1_5_1_d, m30,m20_d,m12_d)
-anova(m1_5_1_d,m30_d,m20_d,m12_d)
 
+AIC(final_model_d, m30_d,m20_d,m12_d)
+BIC(final_model_d, m30_d,m20_d,m12_d)
+anova(final_model_d,m30_d,m20_d,m12_d)
+
+#-------------------------------------------------------------------------RESIDUAL ANALYSIS 
+plot_model_diagnostics <- function(model){
+  model_data <- model.frame(model)
+  model_data$residuals <- resid(model)
+  model_data$fitted <- fitted(model)
+  
+
+  print(
+    ggplot(
+      model_data,
+      aes(
+        x = Session_Number,
+        y = residuals,
+        color = ID,
+        group = ID
+      )
+    ) +
+      geom_line(linewidth = 0.8) +
+      geom_point(size = 3) +
+      geom_hline(
+        yintercept = 0,
+        linetype = "dashed",
+        color = "black"
+      ) +
+      theme_classic(base_size = 14) +
+      labs(
+        x = "Session Number",
+        y = "Residuals",
+        color = "Participant"
+      )
+  )
+
+  print(
+    ggplot(
+      model_data,
+      aes(
+        x = fitted,
+        y = residuals
+      )
+    ) +
+      geom_point(size = 2) +
+      geom_hline(
+        yintercept = 0,
+        linetype = "dashed"
+      ) +
+      theme_classic(base_size = 14) +
+      labs(
+        x = "Fitted values",
+        y = "Residuals"
+      )
+  )
+
+  old_par <- par(no.readonly = TRUE)
+  
+  par(
+    mfrow = c(2,3),
+    mar = c(4,4,3,1)
+  )
+  
+  for(id in levels(model_data$ID)){
+    
+    acf(
+      model_data$residuals[
+        model_data$ID == id
+      ],
+      main = paste("ID", id),
+      xlab = "Lag",
+      ylab = "ACF"
+    )
+    
+  }
+  
+  par(old_par)
+  plot(
+    fitted(model),
+    resid(model),
+    xlab = "Fitted values",
+    ylab = "Residuals",
+    main = "Residuals vs Fitted"
+  )
+  
+  abline(
+    h = 0,
+    lty = 2
+  )
+  
+}
+plot_model_diagnostics(final_model_d)
+plot_model_diagnostics(m12_d)
+plot_model_diagnostics(m20_d)
+plot_model_diagnostics(m30_d)
