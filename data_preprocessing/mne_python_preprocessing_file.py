@@ -9,16 +9,81 @@ from scipy.ndimage import gaussian_filter1d
 from scipy.stats import mannwhitneyu
 import seaborn as sns
 from mne_icalabel import label_components
+from io import StringIO
+from scipy.signal import find_peaks
 
 mne_files_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Raw_data_eeg_psychopy_trimmed")
+mne_root_epochs = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Epoch_files")
 info_datasets = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Important_datasets\Bitbrain_eeg_sessions.csv")
 segments_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Segments")
 results_EEG_path = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results")
 dataframe_results = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results\eeg_dataframe.csv")
 
-final_dataframe_results = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results\eeg_dataframe.csv")
+final_dataframe_results = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Results\behavior_eeg.csv") #Final dataframe with everything of the power
+final_dataframe_behavior_per_trials = Path(r"G:\Mon Drive\M2_Project_Master\Data\Participants data\Important_datasets\dataset_trials_all_ids.csv") # Dataset with every trial 
 
+def clean_dataframe_results(dataset):
+    dataset = dataset.drop(
+        columns=[
+            "WEEK", "DATE", "IT", "DF", "BRIGHTNESS", "F_ORDER",
+            "DPrime_Blocks",
+            "Accuracy_Go", "Accuracy_NoGo",
+            "Variability_Go", "Variability_NoGo",
+            "Variability_Overall", "MeanGoRT"
+        ]
+    )
 
+    dataset = dataset.rename(columns={
+
+        # --
+        "EEG_PRE_OCC_Delta_rel": "PRE_OCC_Delta",
+        "EEG_PRE_OCC_Theta_rel": "PRE_OCC_Theta",
+        "EEG_PRE_OCC_Alpha_rel": "PRE_OCC_Alpha",
+        "EEG_PRE_OCC_Beta_rel": "PRE_OCC_Beta",
+        "EEG_PRE_OCC_Gamma_rel": "PRE_OCC_Gamma",
+        "EEG_PRE_OCC_Theta_Beta": "PRE_OCC_TB",
+
+        # --
+        "EEG_PRE_FRONT_Delta_rel": "PRE_FRONT_Delta",
+        "EEG_PRE_FRONT_Theta_rel": "PRE_FRONT_Theta",
+        "EEG_PRE_FRONT_Alpha_rel": "PRE_FRONT_Alpha",
+        "EEG_PRE_FRONT_Beta_rel": "PRE_FRONT_Beta",
+        "EEG_PRE_FRONT_Gamma_rel": "PRE_FRONT_Gamma",
+        "EEG_PRE_FRONT_Theta_Beta": "PRE_FRONT_TB",
+
+        # ---
+        "EEG_POST_OCC_Delta_rel": "POST_OCC_Delta",
+        "EEG_POST_OCC_Theta_rel": "POST_OCC_Theta",
+        "EEG_POST_OCC_Alpha_rel": "POST_OCC_Alpha",
+        "EEG_POST_OCC_Beta_rel": "POST_OCC_Beta",
+        "EEG_POST_OCC_Gamma_rel": "POST_OCC_Gamma",
+        "EEG_POST_OCC_Theta_Beta": "POST_OCC_TB",
+
+        # --
+        "EEG_POST_FRONT_Delta_rel": "POST_FRONT_Delta",
+        "EEG_POST_FRONT_Theta_rel": "POST_FRONT_Theta",
+        "EEG_POST_FRONT_Alpha_rel": "POST_FRONT_Alpha",
+        "EEG_POST_FRONT_Beta_rel": "POST_FRONT_Beta",
+        "EEG_POST_FRONT_Gamma_rel": "POST_FRONT_Gamma",
+        "EEG_POST_FRONT_Theta_Beta": "POST_FRONT_TB",
+
+        # ---
+        "EEG_DELTA_OCC_Delta_rel": "DELTA_OCC_Delta",
+        "EEG_DELTA_OCC_Theta_rel": "DELTA_OCC_Theta",
+        "EEG_DELTA_OCC_Alpha_rel": "DELTA_OCC_Alpha",
+        "EEG_DELTA_OCC_Beta_rel": "DELTA_OCC_Beta",
+        "EEG_DELTA_OCC_Gamma_rel": "DELTA_OCC_Gamma",
+        "EEG_DELTA_OCC_Theta_Beta": "DELTA_OCC_TB",
+
+        # ---
+        "EEG_DELTA_FRONT_Delta_rel": "DELTA_FRONT_Delta",
+        "EEG_DELTA_FRONT_Theta_rel": "DELTA_FRONT_Theta",
+        "EEG_DELTA_FRONT_Alpha_rel": "DELTA_FRONT_Alpha",
+        "EEG_DELTA_FRONT_Beta_rel": "DELTA_FRONT_Beta",
+        "EEG_DELTA_FRONT_Gamma_rel": "DELTA_FRONT_Gamma",
+        "EEG_DELTA_FRONT_Theta_Beta": "DELTA_FRONT_TB",
+    })
+    return dataset  
 
 BAD_CHANNELS = {
     (2, "27-05-26", "A"): "AF7,P8",
@@ -863,18 +928,811 @@ def preprocess_pipeline():
     plot_time_frequency_analysis(df, row)
 
 
+def add_epoch_behavior(row, epochs): 
+    df = load_dataset()
+    behavior_df = pd.read_csv(final_dataframe_behavior_per_trials)
+    behavior_df["date"] = pd.to_datetime(behavior_df["date"])
+
+    id = df.loc[row, "ID"]
+    date = pd.to_datetime(
+    df.loc[row, "DATE"],
+    format="%d-%m-%y")
+    phase = df.loc[row, "LABEL"]
+
+    behavior = behavior_df[
+    (behavior_df["ID"] == id) &
+    (pd.to_datetime(behavior_df["date"]) == date) &
+    (behavior_df["phase"] == phase)].copy()
+    behavior = behavior.sort_values("trial")
+    behavior = behavior.reset_index(drop=True)
+    print(f"Epochs: {len(epochs)}")
+    print(f"Behavior: {len(behavior)}")
+
+    assert len(epochs) == len(behavior), (
+    f"Mismatch! Epochs={len(epochs)} "
+    f"Behavior={len(behavior)} "
+    f"ID={id} DATE={date} PHASE={phase}")
+    print(behavior[["trial", "stimulus_type"]].head())
+    print(behavior.columns)
+    epochs.metadata = behavior 
+    return epochs
+
+
+def plot_epoch_go_no_go_per_all_id():
+
+    df = load_dataset()
+    rejected_sessions = []
+
+    for row in range(df.shape[0]):
+
+        id = df.loc[row, "ID"]
+        date = df.loc[row, "DATE"]
+        phase = df.loc[row, "LABEL"]
+
+        epochs = create_epoch_go_no_go(row=row)
+        epochs = add_epoch_behavior(row=row, epochs=epochs)
+
+        n_before = len(epochs)
+
+        epochs = reject_bad_erp_epochs(epochs=epochs)
+
+        if len(epochs) >= 0.5 * n_before:
+
+            plot_avg_epochs_per_channels(
+                epochs=epochs,
+                row=row,
+                df=df
+            )
+
+            plot_epochs_per_region(
+                epochs=epochs,
+                row=row,
+                df=df
+            )
+
+            epochs.save(
+                Path(
+                    mne_root_epochs,
+                    f"ID{id}",
+                    f"ID{id}_{date}_{phase}-epo.fif"
+                ),
+                overwrite=True
+            )
+
+        else:
+
+            rejected_sessions.append({
+                "ID": id,
+                "DATE": date,
+                "PHASE": phase,
+                "Remaining": len(epochs),
+                "Original": n_before
+            })
+
+            print(
+                f"ID{id}_{date}_{phase} didn't pass "
+                f"({len(epochs)}/{n_before} epochs)"
+            )
+
+    print("\n" + "="*60)
+    print("Rejected sessions")
+    print("="*60)
+
+    for s in rejected_sessions:
+
+        print(
+            f"ID{s['ID']} | "
+            f"{s['DATE']} | "
+            f"{s['PHASE']} | "
+            f"{s['Remaining']}/{s['Original']} epochs"
+        )
+
+
+def create_epoch_go_no_go(row): 
+    df = load_dataset()
+    mne_object = mne.io.read_raw_fif(df.loc[row, "ICA PATH"], preload=True)
+    #mne_object.plot(block = True)
+    events, event_id = mne.events_from_annotations(
+    mne_object,
+    event_id={
+        "1": 1,      # No-Go
+        "2": 2     # Go
+    })
+    print(events[:5, 2])
+    
+
+    n_go = np.sum(events[:, 2] == 2)
+    n_nogo = np.sum(events[:, 2] == 1)
+    print(f"Go:     {n_go}")
+    print(f"No-Go:  {n_nogo}")
+
+    epochs = mne.Epochs(
+    mne_object,
+    events,
+    event_id={
+        "NoGo":1,
+        "Go":2
+    },
+    tmin=-0.2,
+    tmax=0.8,
+    baseline=(-0.2,0),
+    preload=True,
+    reject_by_annotation=True,
+    event_repeated="drop")
+
+    print(epochs)
+    print(f"Total epochs: {len(epochs)}")
+    #epochs["Go"].plot_image()
+    #epochs["NoGo"].plot_image()
+    #epochs["Go"].average().plot()
+    #epochs["NoGo"].average().plot()
+    #------------------------------------------
+    epochs = epochs.filter(
+    l_freq=None,
+    h_freq=18)
+    return epochs 
+
+def plot_avg_epochs_per_channels(epochs, row, df): 
+
+    fig, axs = plt.subplots(
+    2,
+    4,
+    figsize=(16,8),
+    sharex=True,
+    sharey=False)
+    bad_channels = epochs.info["bads"]
+
+    if bad_channels is None:
+        bad_channels = []
+
+    evokeds = {
+        "Go": epochs["Go"].average(),
+        "NoGo": epochs["NoGo"].average()
+    }
+
+    channels = ["Fp1","Fp2","AF8","AF7",
+            "P7","P8","O1","O2"]
+
+    for ch, ax in zip(channels, axs.ravel()):
+
+        if ch in bad_channels:
+            ax.set_title(f"{ch}\nBad channel")
+            ax.axis("off")
+            continue
+        print("="*50)
+        print(f"ID: {df.loc[row,'ID']}")
+        print(f"DATE: {df.loc[row,'DATE']}")
+        print(f"CHANNEL: {ch}")
+        print("Channels available:", epochs.ch_names)
+        mne.viz.plot_compare_evokeds(
+            evokeds,
+            picks=ch,
+            axes=ax,
+            show=False,
+            legend=False
+        )
+        ax.set_title(ch)
+
+    handles, labels = axs[0,0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper right")
+
+    plt.tight_layout()
+    #plt.show()
+    fig.savefig(Path(results_EEG_path,f"ID{df.loc[row,'ID']}", f"ERP_all channels_ID{df.loc[row,'ID']}_{df.loc[row,'DATE']}_{df.loc[row,'LABEL']}.png"), dpi=300, bbox_inches="tight")
+
+
+
+def roi_wave(evoked, channels):
+    if evoked is None:
+        return None
+    if len(channels) == 0:
+        return None
+
+    return (
+        evoked.copy()
+        .pick(channels)
+        .data
+        .mean(axis=0)
+    )
+
+
+def bootstrap_roi(epochs_condition, channels, B=1000):
+    if len(epochs_condition) == 0:
+        return None,None,None
+    if len(channels) == 0:
+        return None,None,None
+
+    data = (
+        epochs_condition.copy()
+        .pick(channels)
+        .get_data()
+    )
+
+    n_epochs = data.shape[0]
+    boot = []
+
+    for _ in range(B):
+        idx = np.random.choice(
+            n_epochs,
+            size=n_epochs,
+            replace=True
+        )
+
+        wave = (
+            data[idx]
+            .mean(axis=0)
+            .mean(axis=0)
+        )
+
+        boot.append(wave)
+
+    boot = np.array(boot)
+
+    mean = boot.mean(axis=0)
+    ci_low = np.percentile(boot, 2.5, axis=0)
+    ci_high = np.percentile(boot, 97.5, axis=0)
+
+    return mean,ci_low,ci_high
+
+
+def plot_bootstrap(ax, times, mean, ci_low, ci_high, label, color):
+    if mean is None:
+        return
+
+    ax.plot(
+        times,
+        mean,
+        label=label,
+        linewidth=2, 
+        color = color 
+    )
+
+    ax.fill_between(
+        times,
+        ci_low,
+        ci_high,
+        alpha=0.10,
+        color = color 
+    )
+
+
+def safe_average(epochs_condition):
+    if len(epochs_condition) == 0:
+        return None
+
+    return epochs_condition.average()
+
+
+def detect_peak(
+    wave,
+    times,
+    tmin,
+    tmax,
+    polarity
+):
+
+    if wave is None:
+        return None
+
+    mask = (
+        (times >= tmin)
+        &
+        (times <= tmax)
+    )
+
+    wave_window = wave[mask]
+    time_window = times[mask]
+
+    if len(wave_window) == 0:
+        return None
+
+    if polarity == "positive":
+
+        peaks, properties = find_peaks(
+            wave_window,
+            prominence=0
+        )
+
+    elif polarity == "negative":
+
+        peaks, properties = find_peaks(
+            -wave_window,
+            prominence=0
+        )
+
+    else:
+        raise ValueError(
+            "polarity must be 'positive' or 'negative'"
+        )
+
+    if len(peaks) == 0:
+        return None
+
+    prominences = properties["prominences"]
+
+    best_peak = peaks[
+        np.argmax(prominences)
+    ]
+
+    return {
+        "latency": time_window[best_peak],
+        "amplitude": wave_window[best_peak],
+        "index": best_peak
+    }
+
+def latency_amplitude_peaks(
+    roi_name,
+    correct_go,
+    correct_nogo,
+    omission,
+    commission,
+    times
+):
+
+    ERP_COMPONENTS = {
+
+        "P2": ((0.10,0.25),"positive"),
+        "N2": ((0.22,0.45),"negative"),
+        "P3": ((0.30,0.70),"positive")
+
+    }
+
+    CONDITIONS = {
+
+        "Go": correct_go,
+        "NoGo": correct_nogo,
+        "Omission": omission,
+        "Commission": commission
+
+    }
+
+    peaks = {}
+    features = {}
+
+    for condition_name, wave in CONDITIONS.items():
+
+        for component_name, (window, polarity) in ERP_COMPONENTS.items():
+
+            peak = detect_peak(
+                wave,
+                times,
+                *window,
+                polarity=polarity
+            )
+
+            peaks[
+                f"{roi_name}_{component_name}_{condition_name}"
+            ] = peak
+
+            if peak is None:
+
+                features[
+                    f"{roi_name}_{component_name}_{condition_name}_Amp"
+                ] = np.nan
+
+                features[
+                    f"{roi_name}_{component_name}_{condition_name}_Lat"
+                ] = np.nan
+
+            else:
+
+                features[
+                    f"{roi_name}_{component_name}_{condition_name}_Amp"
+                ] = peak["amplitude"]
+
+                features[
+                    f"{roi_name}_{component_name}_{condition_name}_Lat"
+                ] = peak["latency"]
+
+    return peaks, features
+
+def plot_peak(ax, peak, label, color):
+
+    if peak is None:
+        return
+
+    ax.scatter(
+        peak["latency"],
+        peak["amplitude"],
+        marker="v",
+        s=70,
+        color=color,
+        edgecolor="black",
+        zorder=100
+    )
+
+    ax.text(
+        peak["latency"],
+        peak["amplitude"],
+        label,
+        color=color,
+        fontsize=10,
+        fontweight="bold",
+        ha="left",
+        va="bottom"
+    )
+
+def plot_epochs_per_region(epochs, row, df):
+
+    MIN_OMISSION_COMISSION = 30
+
+    id = df.loc[row,"ID"]
+    date = df.loc[row,"DATE"]
+    phase = df.loc[row,"LABEL"]
+
+    #FRONTAL = ["AF7", "Fp1", "Fp2", "AF8"]
+    FRONTAL = ["Fp1", "Fp2"]
+    OCCIPITAL = ["P7", "P8", "O1", "O2"]
+
+    bad = epochs.info["bads"]
+
+    frontal = [
+        ch for ch in FRONTAL
+        if ch not in bad
+    ]
+
+    occipital = [
+        ch for ch in OCCIPITAL
+        if ch not in bad
+    ]
+
+    correct_go = epochs[
+        "(stimulus_type == 'Go') and (correct == 'Correct')"
+    ]
+
+    correct_nogo = epochs[
+        "(stimulus_type == 'No_Go') and (correct == 'Correct')"
+    ]
+
+    omission = epochs[
+        "(stimulus_type == 'Go') and (correct == 'Incorrect')"
+    ]
+
+    commission = epochs[
+        "(stimulus_type == 'No_Go') and (correct == 'Incorrect')"
+    ]
+
+    plot_omission = len(omission) >= MIN_OMISSION_COMISSION
+    plot_commission = len(commission) >= MIN_OMISSION_COMISSION
+
+    print(f"Correct Go:    {len(correct_go)}")
+    print(f"Correct NoGo:  {len(correct_nogo)}")
+    print(f"Omission:      {len(omission)}")
+    print(f"Commission:    {len(commission)}")
+    print(f"Frontal channels: {frontal}")
+    print(f"Occipital channels: {occipital}")
+
+    if not plot_omission:
+        print(f"Omission not plotted: only {len(omission)} trials")
+
+    if not plot_commission:
+        print(f"Commission not plotted: only {len(commission)} trials")
+
+    correct_go_evoked = safe_average(correct_go)
+    correct_nogo_evoked = safe_average(correct_nogo)
+
+    if (
+        correct_go_evoked is None
+        and correct_nogo_evoked is None
+    ):
+        print("No epochs available.")
+        return
+
+    times = (
+        correct_go_evoked
+        or
+        correct_nogo_evoked
+    ).times
+
+    correct_go_front, correct_go_front_low, correct_go_front_high = bootstrap_roi(
+        correct_go,
+        frontal
+    )
+
+    correct_go_occ, correct_go_occ_low, correct_go_occ_high = bootstrap_roi(
+        correct_go,
+        occipital
+    )
+
+    correct_nogo_front, correct_nogo_front_low, correct_nogo_front_high = bootstrap_roi(
+        correct_nogo,
+        frontal
+    )
+
+    correct_nogo_occ, correct_nogo_occ_low, correct_nogo_occ_high = bootstrap_roi(
+        correct_nogo,
+        occipital
+    )
+
+    omission_front = omission_front_low = omission_front_high = None
+    omission_occ = omission_occ_low = omission_occ_high = None
+
+    commission_front = commission_front_low = commission_front_high = None
+    commission_occ = commission_occ_low = commission_occ_high = None
+
+    if plot_omission:
+
+        omission_front, omission_front_low, omission_front_high = bootstrap_roi(
+            omission,
+            frontal
+        )
+
+        omission_occ, omission_occ_low, omission_occ_high = bootstrap_roi(
+            omission,
+            occipital
+        )
+
+    if plot_commission:
+
+        commission_front, commission_front_low, commission_front_high = bootstrap_roi(
+            commission,
+            frontal
+        )
+
+        commission_occ, commission_occ_low, commission_occ_high = bootstrap_roi(
+            commission,
+            occipital
+        )
+
+    front_peaks, front_features = latency_amplitude_peaks(
+        "FRONT",
+        correct_go_front,
+        correct_nogo_front,
+        omission_front,
+        commission_front,
+        times
+    )
+
+    occ_peaks, occ_features = latency_amplitude_peaks(
+        "OCC",
+        correct_go_occ,
+        correct_nogo_occ,
+        omission_occ,
+        commission_occ,
+        times
+    )
+
+    fig, axs = plt.subplots(
+        1,
+        2,
+        figsize=(14,6),
+        sharex=True,
+        sharey=True
+    )
+
+    plot_bootstrap(
+        axs[0],
+        times,
+        correct_go_front,
+        correct_go_front_low,
+        correct_go_front_high,
+        label=f"Correct Go (n={len(correct_go)})",
+        color="tab:blue"
+    )
+
+    plot_bootstrap(
+        axs[0],
+        times,
+        correct_nogo_front,
+        correct_nogo_front_low,
+        correct_nogo_front_high,
+        label=f"Correct No-Go (n={len(correct_nogo)})",
+        color="tab:orange"
+    )
+
+    if plot_omission:
+
+        plot_bootstrap(
+            axs[0],
+            times,
+            omission_front,
+            omission_front_low,
+            omission_front_high,
+            label=f"Omission (n={len(omission)})",
+            color="tab:green"
+        )
+
+    if plot_commission:
+
+        plot_bootstrap(
+            axs[0],
+            times,
+            commission_front,
+            commission_front_low,
+            commission_front_high,
+            label=f"Commission (n={len(commission)})",
+            color="tab:red"
+        )
+
+    plot_peak(axs[0], front_peaks["FRONT_P2_Go"], "P2", "tab:blue")
+    plot_peak(axs[0], front_peaks["FRONT_N2_Go"], "N2", "tab:blue")
+    plot_peak(axs[0], front_peaks["FRONT_P3_Go"], "P3", "tab:blue")
+
+    plot_peak(axs[0], front_peaks["FRONT_P2_NoGo"], "P2", "tab:orange")
+    plot_peak(axs[0], front_peaks["FRONT_N2_NoGo"], "N2", "tab:orange")
+    plot_peak(axs[0], front_peaks["FRONT_P3_NoGo"], "P3", "tab:orange")
+
+    if plot_omission:
+
+        plot_peak(axs[0], front_peaks["FRONT_P2_Omission"], "P2", "tab:green")
+        plot_peak(axs[0], front_peaks["FRONT_N2_Omission"], "N2", "tab:green")
+        plot_peak(axs[0], front_peaks["FRONT_P3_Omission"], "P3", "tab:green")
+
+    if plot_commission:
+
+        plot_peak(axs[0], front_peaks["FRONT_P2_Commission"], "P2", "tab:red")
+        plot_peak(axs[0], front_peaks["FRONT_N2_Commission"], "N2", "tab:red")
+        plot_peak(axs[0], front_peaks["FRONT_P3_Commission"], "P3", "tab:red")
+
+    axs[0].set_title("Frontal")
+
+    plot_bootstrap(
+        axs[1],
+        times,
+        correct_go_occ,
+        correct_go_occ_low,
+        correct_go_occ_high,
+        label=f"Correct Go (n={len(correct_go)})",
+        color="tab:blue"
+    )
+
+    plot_bootstrap(
+        axs[1],
+        times,
+        correct_nogo_occ,
+        correct_nogo_occ_low,
+        correct_nogo_occ_high,
+        label=f"Correct No-Go (n={len(correct_nogo)})",
+        color="tab:orange"
+    )
+
+    if plot_omission:
+
+        plot_bootstrap(
+            axs[1],
+            times,
+            omission_occ,
+            omission_occ_low,
+            omission_occ_high,
+            label=f"Omission (n={len(omission)})",
+            color="tab:green"
+        )
+
+    if plot_commission:
+
+        plot_bootstrap(
+            axs[1],
+            times,
+            commission_occ,
+            commission_occ_low,
+            commission_occ_high,
+            label=f"Commission (n={len(commission)})",
+            color="tab:red"
+        )
+
+    plot_peak(axs[1], occ_peaks["OCC_P2_Go"], "P2", "tab:blue")
+    plot_peak(axs[1], occ_peaks["OCC_N2_Go"], "N2", "tab:blue")
+    plot_peak(axs[1], occ_peaks["OCC_P3_Go"], "P3", "tab:blue")
+
+    plot_peak(axs[1], occ_peaks["OCC_P2_NoGo"], "P2", "tab:orange")
+    plot_peak(axs[1], occ_peaks["OCC_N2_NoGo"], "N2", "tab:orange")
+    plot_peak(axs[1], occ_peaks["OCC_P3_NoGo"], "P3", "tab:orange")
+
+    if plot_omission:
+
+        plot_peak(axs[1], occ_peaks["OCC_P2_Omission"], "P2", "tab:green")
+        plot_peak(axs[1], occ_peaks["OCC_N2_Omission"], "N2", "tab:green")
+        plot_peak(axs[1], occ_peaks["OCC_P3_Omission"], "P3", "tab:green")
+
+    if plot_commission:
+
+        plot_peak(axs[1], occ_peaks["OCC_P2_Commission"], "P2", "tab:red")
+        plot_peak(axs[1], occ_peaks["OCC_N2_Commission"], "N2", "tab:red")
+        plot_peak(axs[1], occ_peaks["OCC_P3_Commission"], "P3", "tab:red")
+
+    axs[1].set_title("Occipital")
+
+    for ax in axs:
+
+        ax.axvline(
+            0,
+            color="k",
+            linestyle="--"
+        )
+
+        ax.axhline(
+            0,
+            color="gray",
+            linewidth=0.8
+        )
+
+        ax.set_xlabel("Time (s)")
+        ax.grid(alpha=0.3)
+        ax.invert_yaxis()
+
+    axs[0].set_ylabel("Amplitude (V)")
+    axs[0].legend()
+
+    plt.tight_layout()
+
+    fig.savefig(
+        Path(
+            results_EEG_path,
+            f"ID{id}",
+            f"ERP_COMPARE_ID{id}_{date}_{phase}.png"
+        ),
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+def reject_bad_erp_epochs(
+    epochs,
+    amp_threshold=150e-6,
+    step_threshold=50e-6
+): # in base of the paper I AM GONNA REJECT BAD EPOCHS 
+
+    data = epochs.get_data()
+    bad_epochs = []
+
+    for i in range(data.shape[0]):
+
+        epoch_data = data[i]
+
+        max_amp = np.max(np.abs(epoch_data))
+
+        max_step = np.max(
+            np.abs(
+                np.diff(
+                    epoch_data,
+                    axis=1
+                )
+            )
+        )
+
+        if (
+            max_amp > amp_threshold
+            or
+            max_step > step_threshold
+        ):
+
+            bad_epochs.append(i)
+
+    print(f"Bad ERP epochs: {len(bad_epochs)} / {len(epochs)}")
+
+    epochs_clean = epochs.drop(
+        bad_epochs,
+        reason="ERP_THRESHOLD_REJECTION"
+    )
+
+    return epochs_clean
+
+
 if __name__ == '__main__':
     df = load_dataset()
     #preprocess_pipeline()
-    create_dataframe()
+    #create_dataframe()
     #create_epoch_feature_dataframe()
     #main(df)
     #annottation_df, mne_object = inspect_annotations_clean_data(row = 0)
     #print(annottation_df[annottation_df["description"] == "1003"])
     #plot_time_frequency_analysis(df, row =0)
+    #------------------------------------------------------------------------
+    df_results_eeg = clean_dataframe_results(pd.read_csv(final_dataframe_results))
+    df_results_per_trial = pd.read_csv(final_dataframe_behavior_per_trials) # Important dataset 
+    print(df_results_per_trial)
+    #------------------------------------------------------------------------
+    plot_epoch_go_no_go_per_all_id()
+    #for row in range(df.shape[0]):
+    #    plot_epoch_per_region(row=row)
+
+
+
+
+
+
 #raw = mne.io.read_raw_fif(info_df.loc[0, "MNE PATH"], preload=False)
 #print(raw.ch_names)
-df = pd.read_csv(info_datasets)
+
 
 # ica_path = df.loc[0, "ICA PATH"]
 # print("PATH:")
