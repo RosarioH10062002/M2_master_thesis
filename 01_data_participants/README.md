@@ -2,7 +2,7 @@
 ## Contents
 
 - `screening/`: Data collected from the initial 14 participants.
-- `info_participants.csv`: Participant information and metadata.
+- `info_participants.csv`: Participant information and metadata collected during the initial screening session. 
 
 ## Experimental Conditions
 
