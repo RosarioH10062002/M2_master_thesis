@@ -6,6 +6,9 @@
 #[1] = GO
 #[2] = [NO GO]
 #[3] = SPACE BAR
+# FEEDBACK SOUNDS ---------------------------------------
+# [104] = Correct response (RIGHT)
+# [105] = Incorrect response (WRONG)
 #SOUND-------------------------------------------------------
 #[1000] Start sound
 #[1001] Finish sound
@@ -77,7 +80,7 @@ marker_outlet = StreamOutlet(marker_info)
 #marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "Z" 
+EXPERIMENT_MODE = "X" 
 PARTICIPANT_ID = "COMPLETE"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
@@ -109,11 +112,19 @@ B_announ = visual.TextStim(win, text = "Interval B", color = "white", height = 4
 TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 def main_x(): #trial + baseline
-    trials_data = main_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, right_sound = RIGHT_SOUND, wrong_sound = WRONG_SOUND, right_img = img_check, wrong_img = img_no_check)
-    save_trials_to_csv(trials_data, filename = f"TRIALS_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
-    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
-    save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
-    print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}")
+    trials_data = main_trial(win, fr, go_stim, no_go_stim, fixation, FS, fc, fb,dc=DC,duration_seconds=duration_block,marker_outlet=marker_outlet,right_img=img_check,wrong_img=img_no_check)
+    save_trials_to_csv(trials_data, filename=f"TRIALS_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
+    baseline_data = play_baseline_block(win, fr, go_stim, no_go_stim, fixation,FS, fc, fb,dc=DC,duration_seconds=duration_block,its_ratio=ITS_RATIO,marker_outlet=marker_outlet)
+
+    save_trials_to_csv(baseline_data,filename=f"BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
+    print(f"Saved!, SUCCESSFUL_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}")
+    
+#def main_x(): #trial + baseline
+#    trials_data = main_trial(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, right_sound = RIGHT_SOUND, wrong_sound = WRONG_SOUND, right_img = img_check, wrong_img = img_no_check)
+#    save_trials_to_csv(trials_data, filename = f"TRIALS_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
+#    baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
+#    save_trials_to_csv(baseline_data, filename = f"BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv") 
+#    print(f"Saved!, SUCESSFUL_TRIAL_{PARTICIPANT_ID}_{TIMESTAMP}")
     
     
 def main_y(): #baseline

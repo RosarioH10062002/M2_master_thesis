@@ -134,17 +134,30 @@ def block_stimulus(win,fr, go_stim,no_go_stim,fixation,audio_array,FS, block_ind
     #marker_outlet.push_sample([1001]) ###
     return trials_data, correct_counter
  
-def display_sound(win, resp_key, stimulus, right_audio, wrong_audio, FS, right_img, wrong_img):
-    if (stimulus == 0 and resp_key == "space") or (stimulus == 1 and resp_key is None): 
+#def display_sound(win, resp_key, stimulus, right_audio, wrong_audio, FS, right_img, wrong_img):
+#    if (stimulus == 0 and resp_key == "space") or (stimulus == 1 and resp_key is None): 
         #correct_var = "Correct"
         #audio = sound.Sound(value = right_sound, sampleRate = FS)
-        right_audio.play()
-        right_img.draw()
-    else:
+#        right_audio.play()
+#        right_img.draw()
+#    else:
         #correct_var = "Incorrect"
         #audio = sound.Sound(value = wrong_sound, sampleRate = FS)
-        wrong_audio.play()
+#        wrong_audio.play()
+#        wrong_img.draw()
+#    win.flip()
+    
+def display_sound(win, resp_key, stimulus, marker_outlet, right_img, wrong_img):
+
+    if (stimulus == 0 and resp_key == "space") or (stimulus == 1 and resp_key is None):
+
+        marker_outlet.push_sample([104])  # RIGHT
+        right_img.draw()
+
+    else:
+        marker_outlet.push_sample([105])  # WRONG
         wrong_img.draw()
+
     win.flip()
     
 def go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, fs, right_img, wrong_img):

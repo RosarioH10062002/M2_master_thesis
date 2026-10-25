@@ -13,7 +13,9 @@ target_probability = 0.2
 def compute_accuracy(correct_counter): 
     return correct_counter/(45) # Higher probability to change since if they let the trial without pressing a buttom, thye will get 80% of accuracy 
     
-def play_trial_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, duration_seconds, right_sound, wrong_sound, right_img, wrong_img):
+def play_trial_block(win, fr, go_stim, no_go_stim, fixation,
+                     fs, fc, fb, dc, duration_seconds,
+                     marker_outlet, right_img, wrong_img):
     announcement(win, text = "INSTRUCTIONS:\n\n"
         "Do NOT press any key when you see the pain au chocolat.\n\n"
         "Press the SPACEBAR only for any other figure.\n"
@@ -21,7 +23,12 @@ def play_trial_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, duratio
         "Press SPACE to begin.")
  
     #audio_array = generate_pink_noise(duration = duration_seconds, fs = fs)
-    trials_data, correct_counter = block_stimulus_trial(win,fr,go_stim, no_go_stim,fixation,fs, block_index = None, right_sound = right_sound, wrong_sound = wrong_sound, right_img = right_img, wrong_img = wrong_img)
+    trials_data, correct_counter = block_stimulus_trial(
+    win, fr, go_stim, no_go_stim, fixation, fs,
+    block_index=None,
+    marker_outlet=marker_outlet,
+    right_img=right_img,
+    wrong_img=wrong_img)
     trial_acc = compute_accuracy(correct_counter)
     # I want to test if they a) can distinguished the go task = pan_au_chocolat b) they can perform at least 50% perfom well in the go/no-go task
     return trials_data, trial_acc
