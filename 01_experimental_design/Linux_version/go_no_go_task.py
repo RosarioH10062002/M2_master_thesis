@@ -160,7 +160,7 @@ def display_sound(win, resp_key, stimulus, marker_outlet, right_img, wrong_img):
 
     win.flip()
     
-def go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, fs, right_img, wrong_img):
+def go_no_go_trial(win, fr, stim, fixation, stimulus, marker_outlet, fs, right_img, wrong_img):
     correct_var = None 
     frames_req_on = int(stim_on_trial * fr)
     frames_req_off = int(stim_off_trial * fr)
@@ -182,7 +182,8 @@ def go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, f
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys: 
                 resp_key, rt = keys[0]
-                display_sound(win, resp_key, stimulus, right_audio, wrong_audio, FS, right_img, wrong_img)
+                #display_sound(win, resp_key, stimulus, right_audio, wrong_audio, FS, right_img, wrong_img)
+                display_sound(win, resp_key, stimulus, marker_outlet, right_img, wrong_img)
                 #audio = display_sound(resp_key, stimulus, right_sound, wrong_sound, fs)
                 #audio.play()
         #display_sound(resp_key, stimulus, right_audio, wrong_audio, FS)
@@ -193,14 +194,14 @@ def go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, f
             keys= event.getKeys(keyList = ["space"], timeStamped = rt_clock)
             if keys:
                 resp_key, rt = keys[0]
-                display_sound(win, resp_key, stimulus, right_audio, wrong_audio, FS, right_img, wrong_img)
+                display_sound(win, resp_key, stimulus, marker_outlet, right_img, wrong_img)
                 #audio = display_sound(resp_key, stimulus, right_sound, wrong_sound, fs)
                 #audio.play()
         #display_sound(resp_key, stimulus, right_audio, wrong_audio, FS)
     #display_sound(resp_key, stimulus, right_audio, wrong_audio, FS)
     if resp_key is None: 
         win.flip()
-        display_sound(win, resp_key, stimulus, right_audio, wrong_audio, FS, right_img, wrong_img)
+        display_sound(win, resp_key, stimulus, marker_outlet, right_img, wrong_img)
         core.wait(extra_window_trial) # 0.6
         win.flip()
         core.wait(0.4)
@@ -214,7 +215,7 @@ def go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, f
     return resp_key, rt, correct_var, trial_onset[0]
 
 
-def block_stimulus_trial(win,fr, go_stim,no_go_stim,fixation,FS, block_index, right_sound, wrong_sound, right_img, wrong_img): 
+def block_stimulus_trial(win, fr, go_stim, no_go_stim, fixation, FS, block_index, marker_outlet, right_img, wrong_img): 
     correct_counter = 0 
     list_stimulus = get_random_stimulus(trials_trial)
     #audio = sound.Sound(value = audio_array,sampleRate=FS)
@@ -223,7 +224,9 @@ def block_stimulus_trial(win,fr, go_stim,no_go_stim,fixation,FS, block_index, ri
         if stimulus == 0: 
             n = get_no_go(len(no_go_stim))
             stim = no_go_stim[n]
-            resp_key, rt, correct_var, trial_onset = go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, FS, right_img, wrong_img)
+            #resp_key, rt, correct_var, trial_onset = go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, FS, right_img, wrong_img)
+            resp_key, rt, correct_var, trial_onset = go_no_go_trial(win, fr, stim, fixation, stimulus,marker_outlet, FS, right_img, wrong_img)
+            
             #if correct_var == "Correct": 
             #    audio = sound.Sound(value = right_sound, sampleRate = FS)
             #elif correct_var == "Incorrect": 
@@ -245,7 +248,8 @@ def block_stimulus_trial(win,fr, go_stim,no_go_stim,fixation,FS, block_index, ri
             })
         elif stimulus == 1: 
             stim = go_stim
-            resp_key, rt, correct_var, trial_onset = go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, FS, right_img, wrong_img)
+            #resp_key, rt, correct_var, trial_onset = go_no_go_trial(win,fr, stim, fixation, stimulus, right_sound, wrong_sound, FS, right_img, wrong_img)
+            resp_key, rt, correct_var, trial_onset = go_no_go_trial(win, fr, stim, fixation, stimulus,marker_outlet, FS, right_img, wrong_img)
             #if correct_var == "Correct": 
             #    audio = sound.Sound(value = right_sound, sampleRate = FS)
             #elif correct_var == "Incorrect": 

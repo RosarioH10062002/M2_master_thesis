@@ -98,8 +98,12 @@ def generate_only_one_it(duration, fs, alpha = 0.1):
 
 
 #Ding Sound
-wav_file = "/home/telecom/Bureau/Rosario/M2_master_thesis-main/ding_sound.wav" # wav file needs the whole path 
-samplerate, data = wavfile.read(wav_file)
+samplerate, data = wavfile.read("ding_sound.wav")
+
+# FEEDBACK SOUNDS
+fs_right, right_audio = wavfile.read("right.wav")
+fs_wrong, wrong_audio = wavfile.read("wrong.wav")
+
 # I want to look for the streams 
 index_psychopy = None 
 flag = True 
@@ -149,11 +153,13 @@ try:
 
         last_timestamp = timestamp
 
+
         if value == 1000:
             audio = mixed_signals[idx]
             print(f"Playing condition {idx}, freq {sequence_fb[idx]} Hz at {datetime.datetime.now()}")
             sd.play(audio, fs, blocking=False)
             idx += 1
+
 
         elif value == 1003:
             sd.play(data, samplerate, blocking=False)
@@ -163,6 +169,14 @@ try:
             sd.stop()
             flag = False
             print(f"Stopping {datetime.datetime.now()}")
+            
+        elif value == 104:  # CORRECT RESPONSE
+            print("LSL marker 104 received: RIGHT")
+            sd.play(right_audio, fs_right, blocking=False)
+
+        elif value == 105:  # INCORRECT RESPONSE
+            print("LSL marker 105 received: WRONG")
+            sd.play(wrong_audio, fs_wrong, blocking=False)
             
         elif value == 111: #PINK NOISE 
             #current_idx = 0
@@ -183,6 +197,7 @@ try:
                     current_idx += 1
             else:
                 print("All alpha levels completed.")
+
 
         elif value ==333: #once we get the final its ratio 
             final_its_ratio = alpha_values[current_idx-1]-0.05
