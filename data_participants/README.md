@@ -1,3 +1,9 @@
-# M2_master_thesis
-<img width="1646" height="605" alt="scheme" src="https://github.com/user-attachments/assets/dd2a38ef-8116-4b8c-b3df-3f4ed7489405" />
+# Participant Data
+## Contents
 
+- `screening/`: Data collected from the initial 14 participants.
+- `info_participants.csv`: Participant information and metadata.
+
+## Experimental Conditions
+
+The initial 14 participants completed six blocks of the Sustained Attention to Response Task (SART), each consisting of 90 trials (540 trials in total), while listening to pink noise.
