@@ -1,6 +1,10 @@
 # Experimental Design
 
-The experimental implementation is organized into two folders: `linux_version` and `stimuli`.
+The experimental implementation is organized into two main folders: `linux_version` and `stimuli`. Additional scripts are provided for volume adjustment, auditory threshold estimation, and EEG data retrieval (OpenBCI).
+
+Before starting, you can ask participants which computer volume level is comfortable for them. To do this, run `trial_noise`, which plays pink noise for 3 seconds. Make sure not to start at maximum volume. I started at 70% and then reduced it according to the participant's preference. The idea is to find a comfortable volume level, which should ideally remain constant throughout the experiment. You can repeat this procedure until a consistent volume setting is reached.
+
+After that, you can estimate their auditory threshold and record it for reference. To do this, run `power_stimation` and ask the participant whether they can hear the sound. Enter y if they can hear it and n if they cannot. The script will then calculate the final RMS value. Since you only need to record one value, you can perform this measurement after establishing a stable volume setting.
 
 ## 1. `linux_version`
 
@@ -56,3 +60,7 @@ This folder contains the visual and auditory stimuli required for the practice s
 ## 4. Output files
 
 At the end of each experimental mode, PsychoPy displays the filename and directory where the experimental data have been saved.
+
+## 5. Extra Information
+
+There is a file called retrieve_eeg_data, which was developed for the previous EEG equipment (OpenBCI). Therefore, it is no longer needed for the current protocol.
