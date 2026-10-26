@@ -80,7 +80,7 @@ marker_outlet = StreamOutlet(marker_info)
 #marker_outlet = False 
 #----------------------------------------
 #DATA TO BE CHANGED BY THE EXPERIMENTER (THE DATA WILL BE SAVE WITH THE PARTICIPANT_ID AND THE DATE)
-EXPERIMENT_MODE = "X" 
+EXPERIMENT_MODE = "Z" 
 PARTICIPANT_ID = "COMPLETE"
 #DATE = "03-03"
 # opciones: "X", "Y", "Z", "W"
@@ -132,6 +132,7 @@ def main_y(): #baseline
     save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
     
 def main_z(): #2afc + its, noise
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
     final_its_ratio = main_twoafc(win, fr,  FS, fc, A_announ, B_announ, fb, dc=DC, duration_seconds=8, its_ratio=ITS_RATIO, n_trials = 5, marker_outlet = marker_outlet)
     preparing = visual.TextStim(
         win,
@@ -144,6 +145,7 @@ def main_z(): #2afc + its, noise
     baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
     #its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=final_its_ratio)
     save_trials_to_csv(baseline_data, filename = f"ITS_NOISE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
 
 def main_w(): # its, noise 
     its_data = play_its_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, FB_LIST, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO)
@@ -161,10 +163,10 @@ def main_pp():
     run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
     
 def main_complete(): 
-    #run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "pre")
     baseline_data = play_baseline_block(win,fr,go_stim, no_go_stim,fixation,FS, fc, fb, dc=DC, duration_seconds=duration_block, its_ratio=ITS_RATIO, marker_outlet = marker_outlet)
     save_trials_to_csv(baseline_data, filename = f"ONLY_BASELINE_{PARTICIPANT_ID}_{TIMESTAMP}.csv")
-    #run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
+    run_pre_phase(win, fixation, marker_outlet = marker_outlet, fr = fr, mode = "post")
     
 if __name__ == "__main__": 
     

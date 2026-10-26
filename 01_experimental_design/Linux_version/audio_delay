@@ -1,0 +1,89 @@
+from pylsl import StreamInfo, StreamOutlet, local_clock
+from psychopy import core
+import csv
+from pathlib import Path
+
+# ============================================================
+# SYNCHRONIZATION VALIDATION - PSYCHOPY MARKER SENDER
+# ============================================================
+
+N_TRIGGERS = 100
+INTER_TRIGGER_INTERVAL = 3.0  # seconds
+MARKER_VALUE = "1000"
+
+# Output file
+output_file = Path("psychopy_trigger_timestamps.csv")
+
+# ============================================================
+# CREATE LSL MARKER STREAM
+# ============================================================
+
+info = StreamInfo(
+    name="PsychoPyMarkersValidation",
+    type="Markers",
+    channel_count=1,
+    nominal_srate=0,       # irregular event stream
+    channel_format="string",
+    source_id="psychopy_validation_markers"
+)
+
+outlet = StreamOutlet(info)
+
+print("LSL marker stream created.")
+print("Waiting 2 seconds for the auditory listener to detect the stream...")
+core.wait(2.0)
+
+# ============================================================
+# OPEN CSV FILE
+# ============================================================
+
+with open(output_file, "w", newline="") as f:
+
+    writer = csv.writer(f)
+
+    writer.writerow([
+        "trigger_number",
+        "marker",
+        "psychopy_send_time_lsl"
+    ])
+
+    print("\nStarting synchronization validation...")
+    print(f"Number of triggers: {N_TRIGGERS}")
+    print(f"Interval: {INTER_TRIGGER_INTERVAL} s\n")
+
+    # ========================================================
+    # SEND 100 TRIGGERS
+    # ========================================================
+
+    for i in range(1, N_TRIGGERS + 1):
+
+        # High-resolution LSL timestamp
+        t_send = local_clock()
+
+        # Send the same marker used during the experiment
+        outlet.push_sample(
+            [MARKER_VALUE],
+            timestamp=t_send
+        )
+
+        # Save timestamp
+        writer.writerow([
+            i,
+            MARKER_VALUE,
+            f"{t_send:.9f}"
+        ])
+
+        f.flush()
+
+        print(
+            f"Trigger {i:03d}/{N_TRIGGERS} | "
+            f"Marker {MARKER_VALUE} sent at "
+            f"{t_send:.9f}"
+        )
+
+        # Wait before next trigger
+        if i < N_TRIGGERS:
+            core.wait(INTER_TRIGGER_INTERVAL)
+
+print("\nValidation finished.")
+print(f"Timestamps saved to: {output_file.resolve()}")

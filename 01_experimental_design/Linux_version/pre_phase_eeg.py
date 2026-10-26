@@ -66,7 +66,7 @@ def run_pre_phase(win, fixation, marker_outlet, fr, mode):
     marker_outlet.push_sample([ding_marker])
 
     if mode == "pre": 
-        announcement(win, text="Thank you, you will continue with the next phase.")
+        announcement(win, text="Thank you, you will continue with the next phase.", marker_outlet = marker_outlet)
     elif mode == "post":
         announcement(win, text="Thank you, the experiment is completed.")
     

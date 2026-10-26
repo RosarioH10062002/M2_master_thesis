@@ -32,12 +32,10 @@ def play_trial_block(win, fr, go_stim, no_go_stim, fixation,
     trial_acc = compute_accuracy(correct_counter)
     # I want to test if they a) can distinguished the go task = pan_au_chocolat b) they can perform at least 50% perfom well in the go/no-go task
     return trials_data, trial_acc
-def main_trial(win, fr, go_stim, no_go_stim, fixation, fs, fc, fb, dc, duration_seconds, marker_outlet, right_img, wrong_img):    
-    
+def main_trial(win, fr, go_stim, no_go_stim, fixation, fs, fc, fb, dc, duration_seconds, marker_outlet, right_img, wrong_img): 
     trials = 0 
     # The user will have 3 trials to reach the minimum accuracy before being discarted as a possible subject of study 
     for trial in range(3): 
-        #trials_data, trial_acc = play_trial_block(win,fr,go_stim, no_go_stim,fixation,fs, fc, fb, dc, duration_seconds, right_sound, wrong_sound, right_img, wrong_img)
         trials_data, trial_acc = play_trial_block(win, fr, go_stim, no_go_stim, fixation, fs, fc, fb, dc, duration_seconds,marker_outlet, right_img, wrong_img)
         if trial_acc > 0.5:
             event.clearEvents(eventType='keyboard')

@@ -20,8 +20,12 @@ x_pk = x_pk / np.max(np.abs(x_pk))
 
 
 #Ding Sound
-wav_file = "/home/telecom/Bureau/Rosario/M2_master_thesis-main/ding_sound.wav" # wav file needs the whole path 
-samplerate, data = wavfile.read(wav_file)
+samplerate, data = wavfile.read("ding_sound.wav")
+
+# Feedback sounds for practice (Mode X)
+fs_right, right_audio = wavfile.read("right.wav")
+fs_wrong, wrong_audio = wavfile.read("wrong.wav")
+
 # I want to look for the streams 
 index_psychopy = None 
 flag = True 
@@ -52,6 +56,14 @@ try:
         if value == 1000:
             sd.play(x_pk, fs, blocking=False)
             print(f"Pink noise started {datetime.datetime.now()}")
+
+        elif value == 104:
+            print("Correct response: RIGHT")
+            sd.play(right_audio, fs_right, blocking=False)
+
+        elif value == 105:
+            print("Incorrect response: WRONG")
+            sd.play(wrong_audio, fs_wrong, blocking=False)
 
         elif value == 1003:
             sd.play(data, samplerate, blocking=False)
