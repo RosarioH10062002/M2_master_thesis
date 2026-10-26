@@ -52,6 +52,7 @@ This folder contains the visual and auditory stimuli required for the practice s
 
 **Important:** The contents of `linux_version` and `stimuli` must be placed in the same working directory when running the experiment. They are provided separately only for organizational clarity.
 
+
 ## 4. Output files
 
 At the end of each experimental mode, PsychoPy displays the filename and directory where the experimental data have been saved.
